@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>কোচিং ম্যানেজমেন্ট সিস্টেম</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap');
+        
+        * {
+            font-family: 'Noto Sans Bengali', sans-serif;
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .stat-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .menu-item {
+            transition: all 0.3s ease;
+        }
+        
+        .menu-item:hover {
+            transform: translateX(5px);
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .slide-in {
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Login Page -->
+    <div id="loginPage" class="min-h-screen gradient-bg flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md slide-in">
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-bold text-gray-800 mb-2">আদর্শ কোচিং সেন্টার</h1>
+                <p class="text-gray-600">ম্যানেজমেন্ট সিস্টেম</p>
+            </div>
+            
+            <form id="loginForm" class="space-y-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">ব্যবহারকারীর ধরন</label>
+                    <select id="userRole" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        <option value="admin">অ্যাডমিন</option>
+                        <option value="teacher">শিক্ষক</option>
+                        <option value="student">শিক্ষার্থী</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">ব্যবহারকারীর নাম</label>
+                    <input type="text" id="username" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="ব্যবহারকারীর নাম লিখুন" required>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">পাসওয়ার্ড</label>
+                    <input type="password" id="password" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="পাসওয়ার্ড লিখুন" required>
+                </div>
+                
+                <button type="submit" class="w-full gradient-bg text-white py-3 rounded-lg font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-200">
+                    লগইন করুন
+                </button>
+            </form>
+            
+            <div class="mt-6 text-center text-sm text-gray-600">
+                <p>ডেমো: admin / admin123</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Dashboard -->
+    <div id="mainApp" class="hidden min-h-screen flex">
+        <!-- Sidebar -->
+        <div id="sidebar" class="w-64 gradient-bg text-white flex flex-col transition-all duration-300">
+            <div class="p-4 flex items-center justify-between border-b border-white/20">
+                <h1 class="text-xl font-bold">আদর্শ কোচিং</h1>
+                <button id="toggleSidebar" class="p-2 hover:bg-white/10 rounded-lg">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <nav class="flex-1 p-4 space-y-2">
+                <button onclick="showSection('dashboard')" class="menu-item w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-all" data-section="dashboard">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                    </svg>
+                    <span class="font-medium">ড্যাশবোর্ড</span>
+                </button>
+                
+                <button onclick="showSection('students')" class="menu-item w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-all" data-section="students">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                    </svg>
+                    <span class="font-medium">শিক্ষার্থী</span>
+                </button>
+                
+                <button onclick="showSection('teachers')" class="menu-item w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-all" data-section="teachers">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                    </svg>
+                    <span class="font-medium">শিক্ষক</span>
+                </button>
+                
+                <button onclick="showSection('testmarks')" class="menu-item w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-all" data-section="testmarks">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    <span class="font-medium">টেস্ট নম্বর</span>
+                </button>
+                
+                <button onclick="showSection('payments')" class="menu-item w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-all" data-section="payments">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <span class="font-medium">পেমেন্ট</span>
+                </button>
+            </nav>
+
+            <div class="p-4 border-t border-white/20">
+                <button onclick="logout()" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                    </svg>
+                    <span>লগ আউট</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 overflow-auto">
+            <!-- Header -->
+            <div class="bg-white shadow-sm border-b border-gray-200 px-8 py-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 id="pageTitle" class="text-2xl font-bold text-gray-800">ড্যাশবোর্ড</h2>
+                        <p class="text-sm text-gray-600">স্বাগতম, <span id="currentUsername">ব্যবহারকারী</span></p>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <svg class="w-6 h-6 text-gray-600 cursor-pointer hover:text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                        </svg>
+                        <div class="w-10 h-10 gradient-bg rounded-full flex items-center justify-center text-white font-bold">
+                            A
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content Area -->
+            <div class="p-8">
+                <!-- Dashboard Section -->
+                <div id="dashboardSection" class="section">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                        <div class="stat-card bg-blue-500 rounded-xl shadow-lg p-6 text-white">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-white/80 text-sm mb-1">মোট শিক্ষার্থী</p>
+                                    <p id="totalStudents" class="text-3xl font-bold">0</p>
+                                </div>
+                                <svg class="w-12 h-12 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                                </svg>
+                            </div>
+                        </div>
+
+                        <div class="stat-card bg-green-500 rounded-xl shadow-lg p-6 text-white">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-white/80 text-sm mb-1">সক্রিয় শিক্ষার্থী</p>
+                                    <p id="activeStudents" class="text-3xl font-bold">0</p>
+                                </div>
+                                <svg class="w-12 h-12 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                            </div>
+                        </div>
+
+                        <div class="stat-card bg-purple-500 rounded-xl shadow-lg p-6 text-white">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-white/80 text-sm mb-1">মোট শিক্ষক</p>
+                                    <p id="totalTeachers" class="text-3xl font-bold">0</p>
+                                </div>
+                                <svg class="w-12 h-12 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                                </svg>
+                            </div>
+                        </div>
+
+                        <div class="stat-card bg-red-500 rounded-xl shadow-lg p-6 text-white">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-white/80 text-sm mb-1">মোট বকেয়া</p>
+                                    <p id="totalDue" class="text-3xl font-bold">৳০</p>
+                                </div>
+                                <svg class="w-12 h-12 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-lg p-6">
+                        <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                            </svg>
+                            সাম্প্রতিক কার্যক্রম
+                        </h3>
+                        <div class="space-y-3">
+                            <div class="border-l-4 border-blue-500 pl-4 py-2">
+                                <p class="font-semibold text-gray-800">স্বাগতম!</p>
+                                <p class="text-sm text-gray-600">কোচিং ম্যানেজমেন্ট সিস্টেমে স্বাগতম</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Students Section -->
+                <div id="studentsSection" class="section hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-3xl font-bold text-gray-800">শিক্ষার্থী ব্যবস্থাপনা</h2>
+                        <button onclick="toggleStudentForm()" class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors">
+                            + নতুন শিক্ষার্থী
+                        </button>
+                    </div>
+
+                    <!-- Student Form -->
+                    <div id="studentForm" class="bg-white rounded-xl shadow-lg p-6 mb-6 hidden">
+                        <h3 class="text-xl font-bold text-gray-800 mb-6">শিক্ষার্থী নিবন্ধন ফর্ম</h3>
+                        <form onsubmit="addStudent(event)" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">শিক্ষার্থী আইডি</label>
+                                <input type="text" id="studentId" class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100" readonly>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">পূর্ণ নাম *</label>
+                                <input type="text" id="studentName" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" required>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">পিতার নাম</label>
+                                <input type="text" id="fatherName" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">মাতার নাম</label>
+                                <input type="text" id="motherName" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">জন্ম তারিখ</label>
+                                <input type="date" id="dob" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">লিঙ্গ</label>
+                                <select id="gender" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                                    <option value="male">ছেলে</option>
+                                    <option value="female">মেয়ে</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">শ্রেণী *</label>
+                                <input type="text" id="studentClass" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="নবম, দশম, একাদশ..." required>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">গ্রুপ</label>
+                                <select id="group" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                                    <option value="science">বিজ্ঞান</option>
+                                    <option value="commerce">বাণিজ্য</option>
+                                    <option value="arts">মানবিক</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">মোবাইল নম্বর *</label>
+                                <input type="tel" id="mobile" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="01712-345678" required>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">অভিভাবক নম্বর</label>
+                                <input type="tel" id="guardianNumber" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="01712-345678">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">মাসিক ফি *</label>
+                                <input type="number" id="monthlyFee" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="১০০০" required>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">ভর্তির তারিখ</label>
+                                <input type="date" id="admissionDate" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                            </div>
+
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">বর্তমান ঠিকানা</label>
+                                <textarea id="presentAddress" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" rows="2"></textarea>
+                            </div>
+
+                            <div class="md:col-span-2 flex gap-4">
+                                <button type="submit" class="flex-1 bg-green-500 text-white py-3 rounded-lg hover:bg-green-600 transition-colors font-semibold">
+                                    সংরক্ষণ করুন
+                                </button>
+                                <button type="button" onclick="toggleStudentForm()" class="flex-1 bg-gray-500 text-white py-3 rounded-lg hover:bg-gray-600 transition-colors font-semibold">
+                                    বাতিল করুন
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Student List -->
+                    <div id="studentList" class="bg-white rounded-xl shadow-lg p-6">
+                        <div class="mb-4">
+                            <input type="text" id="studentSearch" onkeyup="searchStudents()" placeholder="নাম বা আইডি দিয়ে খুঁজুন..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">আইডি</th>
+                                        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">নাম</th>
+                                        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">শ্রেণী</th>
+                                        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">মোবাইল</th>
+                                        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">মাসিক ফি</th>
+                                        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">স্ট্যাটাস</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="studentTableBody" class="divide-y divide-gray-200">
+                                    <tr>
+                                        <td colspan="6" class="text-center py-8 text-gray-500">কোনো শিক্ষার্থী পাওয়া যায়নি</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Teachers Section -->
+                <div id="teachersSection" class="section hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-3xl font-bold text-gray-800">শিক্ষক ব্যবস্থাপনা</h2>
+                        <button onclick="toggleTeacherForm()" class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors">
+                            + নতুন শিক্ষক
+                        </button>
+                    </div>
+
+                    <div id="teacherForm" class="bg-white rounded-xl shadow-lg p-6 mb-6 hidden">
+                        <h3 class="text-xl font-bold text-gray-800 mb-6">শিক্ষক নিবন্ধন ফর্ম</h3>
+                        <form onsubmit="addTeacher(event)" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">শিক্ষক আইডি</label>
+                                <input type="text" id="teacherId" class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100" readonly>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">পূর্ণ নাম *</label>
+                                <input type="text" id="teacherName" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" required>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">বিষয় *</label>
+                                <input type="text" id="teacherSubject" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" required>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">মোবাইল নম্বর *</label>
+                                <input type="tel" id="teacherMobile" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" required>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">ইমেইল</label>
+                                <input type="email" id="teacherEmail" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">যোগদানের তারিখ</label>
+                                <input type="date" id="teacherJoinDate" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">বেতন</label>
+                                <input type="number" id="teacherSalary" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                            </div>
+
+                            <div class="md:col-span-2 flex gap-4">
+                                <button type="submit" class="flex-1 bg-green-500 text-white py-3 rounded-lg hover:bg-green-600 transition-colors font-semibold">
+                                    সংরক্ষণ করুন
+                                </button>
+                                <button type="button" onclick="toggleTeacherForm()" class="flex-1 bg-gray-500 text-white py-3 rounded-lg hover:bg-gray-600 transition-colors font-semibold">
+                                    বাতিল করুন
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-lg p-6">
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">আইডি</th>
+                                        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">নাম</th>
+                                        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">বিষয়</th>
+                                        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">মোবাইল</th>
+                                        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">বেতন</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="teacherTableBody" class="divide-y divide-gray-200">
+                                    <tr>
+                                        <td colspan="5" class="text-center py-8 text-gray-500">কোনো শিক্ষক পাওয়া যায়নি</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Test Marks Section -->
+                <div id="testmarksSection" class="section hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-3xl font-bold text-gray-800">ক্লাস টেস্ট নম্বর</h2>
+                        <button onclick="toggleTestMarksForm()" class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors">
+                            + নম্বর যুক্ত করুন
+                        </button>
+                    </div>
+
+                    <div id="testMarksForm" class="bg-white rounded-xl shadow-lg p-6 mb-6 hidden">
+                        <h3 class="text-xl font-bold text-gray-800 mb-6">ক্লাস টেস্ট নম্বর এন্ট্রি</h3>
+                        <form onsubmit="addTestMarks(event)" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">টেস্ট আইডি</label>
+                                <input type="text" id="testId" class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100" readonly>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">শিক্ষার্থী নির্বাচন *</label>
+                                <select id="testStudentId" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" required>
+                                    <option value="">নির্বাচন করুন</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">বিষয় *</label>
+                                <input type="text" id="testSubject" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" required>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">পরীক্ষার তারিখ</label>
+                                <input type="date" id="testDate" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">পূর্ণমান *</label>
+                                <input type="number" id="fullMarks" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" value="100" required>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">প্রাপ্ত নম্বর *</label>
+                                <input type="number" id="marksObtained" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" required>
+                            </div>
+
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">মন্তব্য</label>
+                                <textarea id="testComments" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" rows="3"></textarea>
+                            </div>
+
+                            <div class="md:col-span-2 flex gap-4">
+                                <button type="submit" class="flex-1 bg-green-500 text-white py-3 rounded-lg hover:bg-green-600 transition-colors font-semibold">
+                                    সংরক্ষণ করুন
+                                </button>
+                                <button type="button" onclick="toggleTestMarksForm()" class="flex-1 bg-gray-500 text-white py-3 rounded-lg hover:bg-gray-600 transition-colors font-semibold">
+                                    বাতিল করুন
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-lg p-6">
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">টেস্ট আইডি</th>
+                                        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">শিক্ষার্থী</th>
+                                        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">বিষয়</th>
+                                        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">তারিখ</th>
+                                        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">নম্বর</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="testMarksTableBody" class="divide-y divide-gray-200">
+                                    <tr>
+                                        <td colspan="5" class="text-center py-8 text-gray-500">কোনো টেস্ট নম্বর পাওয়া যায়নি</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payments Section -->
+                <div id="paymentsSection" class="section hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-3xl font-bold text-gray-800">পেমেন্ট ব্যবস্থাপনা</h2>
+                        <button onclick="togglePaymentForm()" class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors">
+                            + নতুন পেমেন্ট
+                        </button>
+                    </div>
+
+                    <div id="paymentForm" class="bg-white rounded-xl shadow-lg p-6 mb-6 hidden">
+                        <h3 class="text-xl font-bold text-gray-800 mb-6">পেমেন্ট এন্ট্রি ফর্ম</h3>
+                        <form onsubmit="addPayment(event)" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">পেমেন্ট আইডি</label>
+                                <input type="text" id="paymentId" class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100" readonly>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">শিক্ষার্থী নির্বাচন *</label>
+                                <select id="paymentStudentId" onchange="updatePaymentAmount()" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" required>
+                                    <option value="">নির্বাচন করুন</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">মাস</label>
+                                <input type="text" id="paymentMonth" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">বছর</label>
+                                <input type="text" id="paymentYear" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">প্রদেয় টাকা *</label>
+                                <input type="number" id="amountPayable" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" required>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">পরিশোধিত টাকা *</label>
+                                <input type="number" id="amountPaid" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" required>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">পেমেন্ট মাধ্যম</label>
+                                <select id="paymentMethod" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                                    <option value="cash">নগদ</option>
+                                    <option value="bkash">বিকাশ</option>
+                                    <option value="nagad">নগদ</option>
+                                    <option value="online">অনলাইন</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">পেমেন্ট তারিখ</label>
+                                <input type="date" id="paymentDate" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                            </div>
+
+                            <div class="md:col-span-2 flex gap-4">
+                                <button type="submit" class="flex-1 bg-green-500 text-white py-3 rounded-lg hover:bg-green-600 transition-colors font-semibold">
+                                    সংরক্ষণ করুন
+                                </button>
+                                <button type="button" onclick="togglePaymentForm()" class="flex-1 bg-gray-500 text-white py-3 rounded-lg hover:bg-gray-600 transition-colors font-semibold">
+                                    বাতিল করুন
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-lg p-6">
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">পেমেন্ট আইডি</th>
+                                        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">শিক্ষার্থী</th>
+                                        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">মাস/বছর</th>
+                                        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">প্রদেয় টাকা</th>
+                                        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">পরিশোধিত</th>
+                                        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">বকেয়া</th>
+                                        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">স্ট্যাটাস</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="paymentTableBody" class="divide-y divide-gray-200">
+                                    <tr>
+                                        <td colspan="7" class="text-center py-8 text-gray-500">কোনো পেমেন্ট রেকর্ড পাওয়া যায়নি</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data Storage
+        let currentUser = null;
+        let students = [];
+        let teachers = [];
+        let testMarks = [];
+        let payments = [];
+
+        // Login Handler
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const role = document.getElementById('userRole').value;
+
+            if (username && password) {
+                currentUser = { username, role };
+                document.getElementById('currentUsername').textContent = username;
+                document.getElementById('loginPage').classList.add('hidden');
+                document.getElementById('mainApp').classList.remove('hidden');
+                loadData();
+                updateDashboard();
+            }
+        });
+
+        // Logout Handler
+        function logout() {
+            currentUser = null;
+            document.getElementById('loginPage').classList.remove('hidden');
+            document.getElementById('mainApp').classList.add('hidden');
+            document.getElementById('loginForm').reset();
+        }
+
+        // Section Navigation
+        function showSection(sectionName) {
+            const sections = document.querySelectorAll('.section');
+            sections.forEach(section => section.classList.add('hidden'));
+            
+            document.getElementById(sectionName + 'Section').classList.remove('hidden');
+            
+            const menuItems = document.querySelectorAll('.menu-item');
+            menuItems.forEach(item => {
+                item.classList.remove('bg-white', 'text-blue-600');
+            });
+            
+            const activeButton = document.querySelector(`[data-section="${sectionName}"]`);
+            if (activeButton) {
+                activeButton.classList.add('bg-white', 'text-blue-600');
+            }
+
+            const titles = {
+                'dashboard': 'ড্যাশবোর্ড',
+                'students': 'শিক্ষার্থী ব্যবস্থাপনা',
+                'teachers': 'শিক্ষক ব্যবস্থাপনা',
+                'testmarks': 'ক্লাস টেস্ট নম্বর',
+                'payments': 'পেমেন্ট ব্যবস্থাপনা'
+            };
+            document.getElementById('pageTitle').textContent = titles[sectionName] || 'ড্যাশবোর্ড';
+
+            if (sectionName === 'testmarks') {
+                populateTestStudentDropdown();
+            }
+            if (sectionName === 'payments') {
+                populatePaymentStudentDropdown();
+            }
+        }
+
+        // Student Management
+        function toggleStudentForm() {
+            const form = document.getElementById('studentForm');
+            const list = document.getElementById('studentList');
+            
+            if (form.classList.contains('hidden')) {
+                form.classList.remove('hidden');
+                form.classList.add('slide-in');
+                list.classList.add('hidden');
+                document.getElementById('studentId').value = 'STD' + Date.now();
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('admissionDate').value = today;
+            } else {
+                form.classList.add('hidden');
+                list.classList.remove('hidden');
+                document.getElementById('studentForm').querySelector('form').reset();
+            }
+        }
+
+        function addStudent(e) {
+            e.preventDefault();
+            
+            const student = {
+                studentId: document.getElementById('studentId').value,
+                fullName: document.getElementById('studentName').value,
+                fatherName: document.getElementById('fatherName').value,
+                motherName: document.getElementById('motherName').value,
+                dob: document.getElementById('dob').value,
+                gender: document.getElementById('gender').value,
+                class: document.getElementById('studentClass').value,
+                group: document.getElementById('group').value,
+                mobile: document.getElementById('mobile').value,
+                guardianNumber: document.getElementById('guardianNumber').value,
+                monthlyFee: document.getElementById('monthlyFee').value,
+                admissionDate: document.getElementById('admissionDate').value,
+                presentAddress: document.getElementById('presentAddress').value,
+                status: 'active'
+            };
+
+            students.push(student);
+            saveData();
+            displayStudents();
+            toggleStudentForm();
+            updateDashboard();
+            alert('শিক্ষার্থী সফলভাবে যুক্ত হয়েছে!');
+        }
+
+        function displayStudents() {
+            const tbody = document.getElementById('studentTableBody');
+            
+            if (students.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-gray-500">কোনো শিক্ষার্থী পাওয়া যায়নি</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = students.map(student => `
+                <tr class="hover:bg-gray-50">
+                    <td class="px-4 py-3 text-sm text-gray-700">${student.studentId}</td>
+                    <td class="px-4 py-3 text-sm font-medium text-gray-800">${student.fullName}</td>
+                    <td class="px-4 py-3 text-sm text-gray-700">${student.class}</td>
+                    <td class="px-4 py-3 text-sm text-gray-700">${student.mobile}</td>
+                    <td class="px-4 py-3 text-sm text-gray-700">৳${student.monthlyFee}</td>
+                    <td class="px-4 py-3">
+                        <span class="px-3 py-1 rounded-full text-xs font-semibold ${student.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                            ${student.status === 'active' ? 'সক্রিয়' : 'নিষ্ক্রিয়'}
+                        </span>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function searchStudents() {
+            const searchTerm = document.getElementById('studentSearch').value.toLowerCase();
+            const filtered = students.filter(s => 
+                s.fullName.toLowerCase().includes(searchTerm) || 
+                s.studentId.toLowerCase().includes(searchTerm)
+            );
+
+            const tbody = document.getElementById('studentTableBody');
+            
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-gray-500">কোনো শিক্ষার্থী পাওয়া যায়নি</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(student => `
+                <tr class="hover:bg-gray-50">
+                    <td class="px-4 py-3 text-sm text-gray-700">${student.studentId}</td>
+                    <td class="px-4 py-3 text-sm font-medium text-gray-800">${student.fullName}</td>
+                    <td class="px-4 py-3 text-sm text-gray-700">${student.class}</td>
+                    <td class="px-4 py-3 text-sm text-gray-700">${student.mobile}</td>
+                    <td class="px-4 py-3 text-sm text-gray-700">৳${student.monthlyFee}</td>
+                    <td class="px-4 py-3">
+                        <span class="px-3 py-1 rounded-full text-xs font-semibold ${student.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                            ${student.status === 'active' ? 'সক্রিয়' : 'নিষ্ক্রিয়'}
+                        </span>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Teacher Management
+        function toggleTeacherForm() {
+            const form = document.getElementById('teacherForm');
+            
+            if (form.classList.contains('hidden')) {
+                form.classList.remove('hidden');
+                form.classList.add('slide-in');
+                document.getElementById('teacherId').value = 'TCH' + Date.now();
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('teacherJoinDate').value = today;
+            } else {
+                form.classList.add('hidden');
+                document.getElementById('teacherForm').querySelector('form').reset();
+            }
+        }
+
+        function addTeacher(e) {
+            e.preventDefault();
+            
+            const teacher = {
+                teacherId: document.getElementById('teacherId').value,
+                fullName: document.getElementById('teacherName').value,
+                subject: document.getElementById('teacherSubject').value,
+                mobile: document.getElementById('teacherMobile').value,
+                email: document.getElementById('teacherEmail').value,
+                joinDate: document.getElementById('teacherJoinDate').value,
+                salary: document.getElementById('teacherSalary').value,
+                status: 'active'
+            };
+
+            teachers.push(teacher);
+            saveData();
+            displayTeachers();
+            toggleTeacherForm();
+            updateDashboard();
+            alert('শিক্ষক সফলভাবে যুক্ত হয়েছে!');
+        }
+
+        function displayTeachers() {
+            const tbody = document.getElementById('teacherTableBody');
+            
+            if (teachers.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-gray-500">কোনো শিক্ষক পাওয়া যায়নি</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = teachers.map(teacher => `
+                <tr class="hover:bg-gray-50">
+                    <td class="px-4 py-3 text-sm text-gray-700">${teacher.teacherId}</td>
+                    <td class="px-4 py-3 text-sm font-medium text-gray-800">${teacher.fullName}</td>
+                    <td class="px-4 py-3 text-sm text-gray-700">${teacher.subject}</td>
+                    <td class="px-4 py-3 text-sm text-gray-700">${teacher.mobile}</td>
+                    <td class="px-4 py-3 text-sm text-gray-700">৳${teacher.salary || 'N/A'}</td>
+                </tr>
+            `).join('');
+        }
+
+        // Test Marks Management
+        function toggleTestMarksForm() {
+            const form = document.getElementById('testMarksForm');
+            
+            if (form.classList.contains('hidden')) {
+                form.classList.remove('hidden');
+                form.classList.add('slide-in');
+                document.getElementById('testId').value = 'TEST' + Date.now();
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('testDate').value = today;
+                populateTestStudentDropdown();
+            } else {
+                form.classList.add('hidden');
+                document.getElementById('testMarksForm').querySelector('form').reset();
+            }
+        }
+
+        function populateTestStudentDropdown() {
+            const select = document.getElementById('testStudentId');
+            select.innerHTML = '<option value="">নির্বাচন করুন</option>';
+            students.forEach(student => {
+                const option = document.createElement('option');
+                option.value = student.studentId;
+                option.textContent = `${student.fullName} (${student.studentId})`;
+                select.appendChild(option);
+            });
+        }
+
+        function addTestMarks(e) {
+            e.preventDefault();
+            
+            const studentId = document.getElementById('testStudentId').value;
+            const student = students.find(s => s.studentId === studentId);
+
+            const mark = {
+                testId: document.getElementById('testId').value,
+                studentId: studentId,
+                studentName: student ? student.fullName : '',
+                subject: document.getElementById('testSubject').value,
+                testDate: document.getElementById('testDate').value,
+                fullMarks: document.getElementById('fullMarks').value,
+                marksObtained: document.getElementById('marksObtained').value,
+                teacherName: currentUser.username,
+                comments: document.getElementById('testComments').value
+            };
+
+            testMarks.push(mark);
+            saveData();
+            displayTestMarks();
+            toggleTestMarksForm();
+            alert('টেস্ট নম্বর সফলভাবে যুক্ত হয়েছে!');
+        }
+
+        function displayTestMarks() {
+            const tbody = document.getElementById('testMarksTableBody');
+            
+            if (testMarks.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-gray-500">কোনো টেস্ট নম্বর পাওয়া যায়নি</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = testMarks.map(mark => `
+                <tr class="hover:bg-gray-50">
+                    <td class="px-4 py-3 text-sm text-gray-700">${mark.testId}</td>
+                    <td class="px-4 py-3 text-sm font-medium text-gray-800">${mark.studentName}</td>
+                    <td class="px-4 py-3 text-sm text-gray-700">${mark.subject}</td>
+                    <td class="px-4 py-3 text-sm text-gray-700">${mark.testDate}</td>
+                    <td class="px-4 py-3 text-sm text-gray-700">
+                        <span class="font-semibold">${mark.marksObtained}</span>/${mark.fullMarks}
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Payment Management
+        function togglePaymentForm() {
+            const form = document.getElementById('paymentForm');
+            
+            if (form.classList.contains('hidden')) {
+                form.classList.remove('hidden');
+                form.classList.add('slide-in');
+                document.getElementById('paymentId').value = 'PAY' + Date.now();
+                const today = new Date().toISOString().split('T')[0];
+                const now = new Date();
+                document.getElementById('paymentDate').value = today;
+                document.getElementById('paymentMonth').value = now.toLocaleString('default', { month: 'long' });
+                document.getElementById('paymentYear').value = now.getFullYear();
+                populatePaymentStudentDropdown();
+            } else {
+                form.classList.add('hidden');
+                document.getElementById('paymentForm').querySelector('form').reset();
+            }
+        }
+
+        function populatePaymentStudentDropdown() {
+            const select = document.getElementById('paymentStudentId');
+            select.innerHTML = '<option value="">নির্বাচন করুন</option>';
+            students.forEach(student => {
+                const option = document.createElement('option');
+                option.value = student.studentId;
+                option.setAttribute('data-fee', student.monthlyFee);
+                option.textContent = `${student.fullName} (${student.studentId})`;
+                select.appendChild(option);
+            });
+        }
+
+        function updatePaymentAmount() {
+            const select = document.getElementById('paymentStudentId');
+            const selectedOption = select.options[select.selectedIndex];
+            const fee = selectedOption.getAttribute('data-fee');
+            if (fee) {
+                document.getElementById('amountPayable').value = fee;
+            }
+        }
+
+        function addPayment(e) {
+            e.preventDefault();
+            
+            const studentId = document.getElementById('paymentStudentId').value;
+            const student = students.find(s => s.studentId === studentId);
+            const amountPayable = parseFloat(document.getElementById('amountPayable').value);
+            const amountPaid = parseFloat(document.getElementById('amountPaid').value);
+            const dueAmount = amountPayable - amountPaid;
+
+            const payment = {
+                paymentId: document.getElementById('paymentId').value,
+                studentId: studentId,
+                studentName: student ? student.fullName : '',
+                month: document.getElementById('paymentMonth').value,
+                year: document.getElementById('paymentYear').value,
+                amountPayable: amountPayable,
+                amountPaid: amountPaid,
+                dueAmount: dueAmount,
+                paymentMethod: document.getElementById('paymentMethod').value,
+                paymentDate: document.getElementById('paymentDate').value,
+                status: dueAmount > 0 ? 'partial' : 'paid'
+            };
+
+            payments.push(payment);
+            saveData();
+            displayPayments();
+            togglePaymentForm();
+            updateDashboard();
+            alert('পেমেন্ট সফলভাবে যুক্ত হয়েছে!');
+        }
+
+        function displayPayments() {
+            const tbody = document.getElementById('paymentTableBody');
+            
+            if (payments.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center py-8 text-gray-500">কোনো পেমেন্ট রেকর্ড পাওয়া যায়নি</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = payments.map(payment => `
+                <tr class="hover:bg-gray-50">
+                    <td class="px-4 py-3 text-sm text-gray-700">${payment.paymentId}</td>
+                    <td class="px-4 py-3 text-sm font-medium text-gray-800">${payment.studentName}</td>
+                    <td class="px-4 py-3 text-sm text-gray-700">${payment.month}/${payment.year}</td>
+                    <td class="px-4 py-3 text-sm text-gray-700">৳${payment.amountPayable}</td>
+                    <td class="px-4 py-3 text-sm text-green-600 font-semibold">৳${payment.amountPaid}</td>
+                    <td class="px-4 py-3 text-sm text-red-600 font-semibold">৳${payment.dueAmount}</td>
+                    <td class="px-4 py-3">
+                        <span class="px-3 py-1 rounded-full text-xs font-semibold ${
+                            payment.status === 'paid' ? 'bg-green-100 text-green-800' :
+                            payment.status === 'partial' ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-red-100 text-red-800'
+                        }">
+                            ${payment.status === 'paid' ? 'পরিশোধিত' :
+                              payment.status === 'partial' ? 'আংশিক' : 'বকেয়া'}
+                        </span>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Dashboard Update
+        function updateDashboard() {
+            document.getElementById('totalStudents').textContent = students.length;
+            document.getElementById('activeStudents').textContent = students.filter(s => s.status === 'active').length;
+            document.getElementById('totalTeachers').textContent = teachers.length;
+            
+            const totalDue = payments.reduce((sum, p) => sum + (p.dueAmount || 0), 0);
+            document.getElementById('totalDue').textContent = '৳' + totalDue;
+        }
+
+        // Data Persistence
+        function saveData() {
+            const data = {
+                students: students,
+                teachers: teachers,
+                testMarks: testMarks,
+                payments: payments
+            };
+            localStorage.setItem('coachingData', JSON.stringify(data));
+        }
+
+        function loadData() {
+            const savedData = localStorage.getItem('coachingData');
+            if (savedData) {
+                const data = JSON.parse(savedData);
+                students = data.students || [];
+                teachers = data.teachers || [];
+                testMarks = data.testMarks || [];
+                payments = data.payments || [];
+                
+                displayStudents();
+                displayTeachers();
+                displayTestMarks();
+                displayPayments();
+                updateDashboard();
+            }
+        }
+
+        // Initialize
+        window.addEventListener('load', function() {
+            const firstMenuItem = document.querySelector('.menu-item');
+            if (firstMenuItem) {
+                firstMenuItem.classList.add('bg-white', 'text-blue-600');
+            }
+        });
+    </script>
+</body>
+</html>
