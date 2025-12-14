@@ -948,6 +948,21 @@
             <div id="paymentsSection" class="content-section">
                 <h2 style="margin-bottom: 20px;">পেমেন্ট ট্র্যাকিং</h2>
                 <div class="search-bar">
+                    <select id="paymentMonth" onchange="loadPayments()">
+                        <option value="">সব মাস</option>
+                        <option value="জানুয়ারি">জানুয়ারি</option>
+                        <option value="ফেব্রুয়ারি">ফেব্রুয়ারি</option>
+                        <option value="মার্চ">মার্চ</option>
+                        <option value="এপ্রিল">এপ্রিল</option>
+                        <option value="মে">মে</option>
+                        <option value="জুন">জুন</option>
+                        <option value="জুলাই">জুলাই</option>
+                        <option value="আগস্ট">আগস্ট</option>
+                        <option value="সেপ্টেম্বর">সেপ্টেম্বর</option>
+                        <option value="অক্টোবর">অক্টোবর</option>
+                        <option value="নভেম্বর">নভেম্বর</option>
+                        <option value="ডিসেম্বর">ডিসেম্বর</option>
+                    </select>
                     <select id="paymentClass" onchange="loadPayments()">
                         <option value="">সব ক্লাস</option>
                         <option value="6">ক্লাস ৬</option>
@@ -965,6 +980,7 @@
                             <tr>
                                 <th>নাম</th>
                                 <th>ক্লাস</th>
+                                <th>মাস</th>
                                 <th>মাসিক ফি</th>
                                 <th>পেমেন্ট তারিখ</th>
                                 <th>স্ট্যাটাস</th>
@@ -2067,27 +2083,27 @@
         // Payment management with full edit functionality
         async function loadPayments() {
             const selectedClass = document.getElementById('paymentClass').value;
+            const selectedMonth = document.getElementById('paymentMonth').value;
 
             try {
                 const { collection, getDocs, query, where } = window.firestoreFunctions;
                 
-                const currentMonth = ['জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন', 'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর'][new Date().getMonth()];
-                const currentYear = new Date().getFullYear().toString();
+                // Build query based on filters
+                let constraints = [];
+                
+                if (selectedClass) {
+                    constraints.push(where('class', '==', selectedClass));
+                }
+                
+                if (selectedMonth) {
+                    constraints.push(where('month', '==', selectedMonth));
+                }
                 
                 let paymentsQuery;
-                if (selectedClass) {
-                    paymentsQuery = query(
-                        collection(window.db, 'payments'),
-                        where('class', '==', selectedClass),
-                        where('month', '==', currentMonth),
-                        where('year', '==', currentYear)
-                    );
+                if (constraints.length > 0) {
+                    paymentsQuery = query(collection(window.db, 'payments'), ...constraints);
                 } else {
-                    paymentsQuery = query(
-                        collection(window.db, 'payments'),
-                        where('month', '==', currentMonth),
-                        where('year', '==', currentYear)
-                    );
+                    paymentsQuery = collection(window.db, 'payments');
                 }
 
                 const paymentsSnapshot = await getDocs(paymentsQuery);
@@ -2095,33 +2111,47 @@
                 tbody.innerHTML = '';
 
                 if (paymentsSnapshot.empty) {
-                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">কোনো পেমেন্ট রেকর্ড পাওয়া যায়নি</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 30px;">কোনো পেমেন্ট রেকর্ড পাওয়া যায়নি</td></tr>';
                     return;
                 }
 
+                // Sort payments by date (newest first)
+                const payments = [];
                 paymentsSnapshot.forEach(doc => {
-                    const payment = doc.data();
-                    
+                    payments.push({ id: doc.id, ...doc.data() });
+                });
+
+                // Sort by month and year
+                const months = ['জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন', 'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর'];
+                payments.sort((a, b) => {
+                    if (a.year !== b.year) return b.year - a.year;
+                    return months.indexOf(b.month) - months.indexOf(a.month);
+                });
+
+                payments.forEach(payment => {
                     const row = tbody.insertRow();
                     row.innerHTML = `
                         <td>${payment.studentName}</td>
                         <td>ক্লাস ${payment.class}</td>
+                        <td>${payment.month} ${payment.year}</td>
                         <td>৳${payment.amount}</td>
-                        <td>${payment.dueDate}</td>
+                        <td>${payment.dueDate || payment.paidDate || '-'}</td>
                         <td>
                             <span class="badge ${payment.isPaid ? 'paid' : 'unpaid'}">
                                 ${payment.isPaid ? '✓ পরিশোধিত' : '✗ বকেয়া'}
                             </span>
                         </td>
                         <td>
-                            <button class="action-btn edit" onclick="editPayment('${doc.id}')">এডিট</button>
+                            <button class="action-btn edit" onclick="editPayment('${payment.id}')">এডিট</button>
                             <button class="action-btn view" onclick="viewPaymentHistory('${payment.studentId}', '${payment.studentName}')">হিস্টরি</button>
-                            ${!payment.isPaid ? `<button class="action-btn" style="background: var(--secondary);" onclick="quickMarkAsPaid('${doc.id}')">পরিশোধ</button>` : ''}
+                            ${!payment.isPaid ? `<button class="action-btn" style="background: var(--secondary);" onclick="quickMarkAsPaid('${payment.id}')">পরিশোধ</button>` : ''}
                         </td>
                     `;
                 });
             } catch (error) {
                 console.error('Error loading payments:', error);
+                const tbody = document.getElementById('paymentsTableBody');
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 30px; color: red;">ডেটা লোড করতে সমস্যা হয়েছে। পেজ রিফ্রেশ করুন।</td></tr>';
             }
         }
 
