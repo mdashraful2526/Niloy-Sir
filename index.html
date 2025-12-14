@@ -1538,30 +1538,46 @@
             </div>
             <div style="padding: 20px 0;">
                 <div class="form-group">
-                    <label>মাস নির্বাচন করুন</label>
-                    <select id="reportMonth" style="width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 10px; font-size: 1em;">
-                        <option value="">মাস নির্বাচন করুন</option>
-                        <option value="0">জানুয়ারি</option>
-                        <option value="1">ফেব্রুয়ারি</option>
-                        <option value="2">মার্চ</option>
-                        <option value="3">এপ্রিল</option>
-                        <option value="4">মে</option>
-                        <option value="5">জুন</option>
-                        <option value="6">জুলাই</option>
-                        <option value="7">আগস্ট</option>
-                        <option value="8">সেপ্টেম্বর</option>
-                        <option value="9">অক্টোবর</option>
-                        <option value="10">নভেম্বর</option>
-                        <option value="11">ডিসেম্বর</option>
+                    <label>রিপোর্ট টাইপ</label>
+                    <select id="reportType" onchange="toggleReportDateOptions()" style="width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 10px; font-size: 1em;">
+                        <option value="monthly">মাসিক রিপোর্ট</option>
+                        <option value="today">আজকের রিপোর্ট</option>
+                        <option value="daterange">তারিখ অনুযায়ী</option>
                     </select>
                 </div>
-                <div class="form-group">
-                    <label>বছর নির্বাচন করুন</label>
-                    <select id="reportYear" style="width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 10px; font-size: 1em;">
-                        <option value="2024">২০২৪</option>
-                        <option value="2025" selected>২০২৫</option>
-                    </select>
+
+                <!-- Monthly Report Options -->
+                <div id="monthlyOptions">
+                    <div class="form-group">
+                        <label>মাস নির্বাচন করুন</label>
+                        <select id="reportMonth" style="width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 10px; font-size: 1em;">
+                            <option value="">লোড হচ্ছে...</option>
+                        </select>
+                        <p style="font-size: 0.9em; color: var(--text-light); margin-top: 8px;">
+                            * শুধুমাত্র যে মাসগুলোতে উপস্থিতি আছে সেগুলো দেখানো হচ্ছে
+                        </p>
+                    </div>
                 </div>
+
+                <!-- Date Range Options -->
+                <div id="dateRangeOptions" style="display: none;">
+                    <div class="form-group">
+                        <label>শুরুর তারিখ</label>
+                        <input type="date" id="reportStartDate" style="width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 10px; font-size: 1em;">
+                    </div>
+                    <div class="form-group">
+                        <label>শেষ তারিখ</label>
+                        <input type="date" id="reportEndDate" style="width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 10px; font-size: 1em;">
+                    </div>
+                </div>
+
+                <!-- Today Info -->
+                <div id="todayInfo" style="display: none; padding: 15px; background: var(--bg-light); border-radius: 10px; margin-bottom: 15px;">
+                    <p style="margin: 0; color: var(--text-dark); font-weight: 600;">
+                        📅 আজকের তারিখ: <span id="todayDateDisplay"></span>
+                    </p>
+                </div>
+
                 <div class="form-group">
                     <label>ক্লাস নির্বাচন করুন (ঐচ্ছিক)</label>
                     <select id="reportClass" style="width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 10px; font-size: 1em;">
@@ -1574,13 +1590,18 @@
                         <option value="11">ক্লাস ১১</option>
                     </select>
                 </div>
+
                 <div style="display: flex; gap: 10px; margin-top: 25px;">
                     <button class="btn btn-primary" onclick="downloadAttendanceReport()" style="flex: 1;">
-                        📄 PDF ডাউনলোড করুন
+                        📄 PDF/ছবি ডাউনলোড
                     </button>
-                    <button class="btn" style="background: var(--secondary); color: white; flex: 1;" onclick="downloadAttendanceImage()">
-                        🖼️ ছবি ডাউনলোড করুন
-                    </button>
+                </div>
+
+                <!-- Available data info -->
+                <div id="availableDataInfo" style="margin-top: 20px; padding: 15px; background: #e0f2fe; border-radius: 10px; border-left: 4px solid var(--primary);">
+                    <p style="margin: 0; color: var(--text-dark); font-size: 0.9em;">
+                        <strong>ℹ️ তথ্য:</strong> মোট <span id="totalAttendanceDays">0</span> দিনের উপস্থিতি রেকর্ড আছে
+                    </p>
                 </div>
             </div>
         </div>
@@ -2038,28 +2059,141 @@
         }
 
         // Attendance Report Functions
-        function openAttendanceReportModal() {
-            const currentMonth = new Date().getMonth();
-            document.getElementById('reportMonth').value = currentMonth;
+        async function openAttendanceReportModal() {
             document.getElementById('attendanceReportModal').classList.add('active');
+            
+            // Set today's date
+            const today = new Date();
+            const todayBengali = today.toLocaleDateString('bn-BD', { 
+                day: 'numeric', 
+                month: 'long', 
+                year: 'numeric' 
+            });
+            document.getElementById('todayDateDisplay').textContent = todayBengali;
+            document.getElementById('reportStartDate').valueAsDate = today;
+            document.getElementById('reportEndDate').valueAsDate = today;
+            
+            // Load available months with data
+            await loadAvailableMonths();
         }
 
         function closeAttendanceReportModal() {
             document.getElementById('attendanceReportModal').classList.remove('active');
         }
 
-        async function generateAttendanceReportData() {
-            const monthIndex = parseInt(document.getElementById('reportMonth').value);
-            const year = document.getElementById('reportYear').value;
-            const selectedClass = document.getElementById('reportClass').value;
+        function toggleReportDateOptions() {
+            const reportType = document.getElementById('reportType').value;
+            const monthlyOptions = document.getElementById('monthlyOptions');
+            const dateRangeOptions = document.getElementById('dateRangeOptions');
+            const todayInfo = document.getElementById('todayInfo');
 
-            if (monthIndex === '') {
-                alert('মাস নির্বাচন করুন!');
-                return null;
+            if (reportType === 'monthly') {
+                monthlyOptions.style.display = 'block';
+                dateRangeOptions.style.display = 'none';
+                todayInfo.style.display = 'none';
+            } else if (reportType === 'today') {
+                monthlyOptions.style.display = 'none';
+                dateRangeOptions.style.display = 'none';
+                todayInfo.style.display = 'block';
+            } else if (reportType === 'daterange') {
+                monthlyOptions.style.display = 'none';
+                dateRangeOptions.style.display = 'block';
+                todayInfo.style.display = 'none';
             }
+        }
 
-            const monthNames = ['জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন', 'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর'];
-            const monthName = monthNames[monthIndex];
+        async function loadAvailableMonths() {
+            try {
+                const { collection, getDocs } = window.firestoreFunctions;
+                const attendanceSnapshot = await getDocs(collection(window.db, 'attendance'));
+                
+                // Get all unique month-year combinations
+                const monthYearSet = new Set();
+                attendanceSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (data.date) {
+                        const date = new Date(data.date);
+                        const monthYear = `${date.getFullYear()}-${date.getMonth()}`;
+                        monthYearSet.add(monthYear);
+                    }
+                });
+
+                // Convert to array and sort
+                const monthYearArray = Array.from(monthYearSet).map(my => {
+                    const [year, month] = my.split('-');
+                    return { year: parseInt(year), month: parseInt(month) };
+                });
+                monthYearArray.sort((a, b) => {
+                    if (a.year !== b.year) return b.year - a.year;
+                    return b.month - a.month;
+                });
+
+                // Populate dropdown
+                const monthNames = ['জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন', 'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর'];
+                const select = document.getElementById('reportMonth');
+                select.innerHTML = '<option value="">মাস নির্বাচন করুন</option>';
+                
+                if (monthYearArray.length === 0) {
+                    select.innerHTML = '<option value="">কোনো উপস্থিতি রেকর্ড নেই</option>';
+                } else {
+                    monthYearArray.forEach(({ year, month }) => {
+                        const option = document.createElement('option');
+                        option.value = `${year}-${month}`;
+                        option.textContent = `${monthNames[month]} ${year}`;
+                        select.appendChild(option);
+                    });
+                    
+                    // Auto-select the most recent month
+                    select.value = `${monthYearArray[0].year}-${monthYearArray[0].month}`;
+                }
+
+                // Update info
+                document.getElementById('totalAttendanceDays').textContent = attendanceSnapshot.size;
+
+            } catch (error) {
+                console.error('Error loading available months:', error);
+                document.getElementById('reportMonth').innerHTML = '<option value="">লোড করতে সমস্যা হয়েছে</option>';
+            }
+        }
+
+        async function generateAttendanceReportData() {
+            const reportType = document.getElementById('reportType').value;
+            const selectedClass = document.getElementById('reportClass').value;
+            let startDate, endDate, reportTitle;
+
+            if (reportType === 'monthly') {
+                const monthYearValue = document.getElementById('reportMonth').value;
+                if (!monthYearValue) {
+                    alert('মাস নির্বাচন করুন!');
+                    return null;
+                }
+
+                const [year, monthIndex] = monthYearValue.split('-');
+                const monthNames = ['জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন', 'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর'];
+                
+                startDate = new Date(year, monthIndex, 1).toISOString().split('T')[0];
+                endDate = new Date(year, parseInt(monthIndex) + 1, 0).toISOString().split('T')[0];
+                reportTitle = `${monthNames[monthIndex]} ${year}`;
+
+            } else if (reportType === 'today') {
+                const today = new Date();
+                startDate = today.toISOString().split('T')[0];
+                endDate = startDate;
+                reportTitle = `আজকের উপস্থিতি - ${today.toLocaleDateString('bn-BD')}`;
+
+            } else if (reportType === 'daterange') {
+                startDate = document.getElementById('reportStartDate').value;
+                endDate = document.getElementById('reportEndDate').value;
+                
+                if (!startDate || !endDate) {
+                    alert('শুরু এবং শেষ তারিখ নির্বাচন করুন!');
+                    return null;
+                }
+                
+                const start = new Date(startDate);
+                const end = new Date(endDate);
+                reportTitle = `${start.toLocaleDateString('bn-BD')} থেকে ${end.toLocaleDateString('bn-BD')}`;
+            }
 
             try {
                 const { collection, getDocs, query, where } = window.firestoreFunctions;
@@ -2075,10 +2209,7 @@
                     students[doc.id] = { id: doc.id, ...doc.data() };
                 });
 
-                // Get attendance for the month
-                const startDate = new Date(year, monthIndex, 1).toISOString().split('T')[0];
-                const endDate = new Date(year, monthIndex + 1, 0).toISOString().split('T')[0];
-                
+                // Get attendance for the date range
                 const attendanceSnapshot = await getDocs(collection(window.db, 'attendance'));
                 const attendanceData = {};
 
@@ -2094,11 +2225,12 @@
                 });
 
                 return {
-                    monthName,
-                    year,
+                    reportTitle,
+                    reportType,
                     students,
                     attendanceData,
-                    selectedClass
+                    selectedClass,
+                    dateRange: `${startDate} থেকে ${endDate}`
                 };
             } catch (error) {
                 console.error('Error generating report data:', error);
@@ -2111,7 +2243,7 @@
             const reportData = await generateAttendanceReportData();
             if (!reportData) return;
 
-            // Create PDF using canvas
+            // Create canvas report
             const canvas = document.getElementById('reportCanvas');
             const ctx = canvas.getContext('2d');
             
@@ -2124,7 +2256,7 @@
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             // Header with gradient
-            const gradient = ctx.createLinearGradient(0, 0, canvas.width, 200);
+            const gradient = ctx.createLinearGradient(0, 0, canvas.width, 250);
             gradient.addColorStop(0, '#667eea');
             gradient.addColorStop(1, '#764ba2');
             ctx.fillStyle = gradient;
@@ -2134,23 +2266,36 @@
             ctx.fillStyle = '#ffffff';
             ctx.font = 'bold 80px Arial';
             ctx.textAlign = 'center';
-            ctx.fillText('স্মার্ট কোচিং সেন্টার', canvas.width / 2, 120);
+            ctx.fillText('স্মার্ট কোচিং সেন্টার', canvas.width / 2, 110);
             
             ctx.font = '50px Arial';
-            ctx.fillText('উপস্থিতি রিপোর্ট', canvas.width / 2, 200);
+            ctx.fillText('উপস্থিতি রিপোর্ট', canvas.width / 2, 190);
 
-            // Month and Year
+            // Report title
             ctx.fillStyle = '#1e293b';
-            ctx.font = 'bold 60px Arial';
-            ctx.fillText(`${reportData.monthName} ${reportData.year}`, canvas.width / 2, 350);
+            ctx.font = 'bold 55px Arial';
+            ctx.fillText(reportData.reportTitle, canvas.width / 2, 350);
 
             if (reportData.selectedClass) {
                 ctx.font = '45px Arial';
                 ctx.fillText(`ক্লাস ${reportData.selectedClass}`, canvas.width / 2, 420);
             }
 
+            // Table header background
+            let y = 520;
+            
+            // Add note for today's report
+            if (reportData.reportType === 'today') {
+                ctx.fillStyle = '#3b82f6';
+                ctx.fillRect(100, y, canvas.width - 200, 60);
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 35px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('আজকের উপস্থিতি রেকর্ড', canvas.width / 2, y + 40);
+                y += 80;
+            }
+
             // Table header
-            let y = 550;
             ctx.fillStyle = '#f1f5f9';
             ctx.fillRect(100, y, canvas.width - 200, 80);
             
@@ -2161,7 +2306,7 @@
             ctx.fillText('নাম', 350, y + 50);
             ctx.fillText('ক্লাস', 1000, y + 50);
             ctx.fillText('উপস্থিত', 1350, y + 50);
-            ctx.fillText('মোট দিন', 1750, y + 50);
+            ctx.fillText('মোট', 1750, y + 50);
             ctx.fillText('শতাংশ', 2100, y + 50);
 
             y += 100;
@@ -2169,8 +2314,16 @@
             // Table rows
             ctx.font = '35px Arial';
             let rowIndex = 0;
-            for (const [studentId, student] of Object.entries(reportData.students)) {
-                if (y > 3300) break; // Page limit
+            const studentEntries = Object.entries(reportData.students);
+            
+            // Sort by class and roll
+            studentEntries.sort((a, b) => {
+                if (a[1].class !== b[1].class) return parseInt(a[1].class) - parseInt(b[1].class);
+                return parseInt(a[1].roll) - parseInt(b[1].roll);
+            });
+
+            for (const [studentId, student] of studentEntries) {
+                if (y > 3250) break; // Page limit
 
                 const attendance = reportData.attendanceData[studentId] || { present: 0, total: 0 };
                 const percentage = attendance.total > 0 ? 
@@ -2184,7 +2337,10 @@
 
                 ctx.fillStyle = '#1e293b';
                 ctx.fillText(student.roll, 150, y);
-                ctx.fillText(student.name, 350, y);
+                
+                // Truncate long names
+                const name = student.name.length > 20 ? student.name.substring(0, 20) + '...' : student.name;
+                ctx.fillText(name, 350, y);
                 ctx.fillText(`ক্লাস ${student.class}`, 1000, y);
                 ctx.fillText(attendance.present.toString(), 1450, y);
                 ctx.fillText(attendance.total.toString(), 1850, y);
@@ -2192,37 +2348,54 @@
                 // Color code percentage
                 const percent = parseFloat(percentage);
                 ctx.fillStyle = percent >= 75 ? '#10b981' : percent >= 50 ? '#f59e0b' : '#ef4444';
+                ctx.font = 'bold 38px Arial';
                 ctx.fillText(`${percentage}%`, 2100, y);
+                ctx.font = '35px Arial';
                 ctx.fillStyle = '#1e293b';
 
                 y += 70;
                 rowIndex++;
             }
 
-            // Footer
+            // Footer with date and summary
+            y = 3350;
+            ctx.fillStyle = '#e2e8f0';
+            ctx.fillRect(100, y, canvas.width - 200, 100);
+            
             ctx.fillStyle = '#64748b';
-            ctx.font = '30px Arial';
+            ctx.font = '32px Arial';
             ctx.textAlign = 'center';
-            const date = new Date().toLocaleDateString('bn-BD');
-            ctx.fillText(`রিপোর্ট তৈরির তারিখ: ${date}`, canvas.width / 2, 3400);
+            const generatedDate = new Date().toLocaleDateString('bn-BD');
+            ctx.fillText(`রিপোর্ট তৈরির তারিখ: ${generatedDate}`, canvas.width / 2, y + 35);
+            
+            ctx.font = 'bold 30px Arial';
+            ctx.fillText(`মোট শিক্ষার্থী: ${studentEntries.length}`, canvas.width / 2, y + 75);
 
-            // Convert to PDF and download
+            // Convert to blob and download
             canvas.toBlob(blob => {
                 const url = URL.createObjectURL(blob);
                 const link = document.createElement('a');
                 link.href = url;
-                link.download = `উপস্থিতি-রিপোর্ট-${reportData.monthName}-${reportData.year}.png`;
+                
+                // Create filename based on report type
+                let filename = 'উপস্থিতি-রিপোর্ট';
+                if (reportData.reportType === 'today') {
+                    filename += '-আজকের';
+                } else {
+                    filename += `-${reportData.reportTitle.replace(/\s+/g, '-')}`;
+                }
+                if (reportData.selectedClass) {
+                    filename += `-ক্লাস-${reportData.selectedClass}`;
+                }
+                filename += '.png';
+                
+                link.download = filename;
                 link.click();
                 URL.revokeObjectURL(url);
                 
-                alert('রিপোর্ট ডাউনলোড হচ্ছে!');
+                alert('রিপোর্ট ডাউনলোড হচ্ছে! ✅');
                 closeAttendanceReportModal();
             });
-        }
-
-        async function downloadAttendanceImage() {
-            // Same as PDF but different file name
-            await downloadAttendanceReport();
         }
 
         // Show detailed student information
