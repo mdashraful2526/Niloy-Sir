@@ -1151,9 +1151,6 @@
                     <input type="password" id="password" placeholder="demo" required>
                 </div>
                 <button type="submit" class="btn btn-primary">লগইন করুন</button>
-                <div class="forgot-password">
-                    <a href="#" id="forgotPasswordLink">পাসওয়ার্ড ভুলে গেছেন?</a>
-                </div>
             </form>
             <div class="forgot-password" style="margin-top: 15px;">
                 <a href="#" onclick="backToPublicView()">← পাবলিক ভিউতে ফিরে যান</a>
@@ -1161,8 +1158,7 @@
         </div>
     </div>
 
-    <!-- Forgot Password Modal -->
-    <div id="forgotPasswordModal" class="modal">
+    <!-- Public View -->
         <div class="modal-content">
             <div class="modal-header">
                 <h2>পাসওয়ার্ড রিসেট</h2>
@@ -2768,6 +2764,27 @@
             }
         }
 
+        // Database Helper Functions for Professional Structure
+        const DB = {
+            // Get collection path based on class
+            getStudentPath: (className) => `students/class_${className}`,
+            getAttendancePath: (className, date) => `attendance/class_${className}/${date}`,
+            getPaymentPath: (className, studentId) => `payments/class_${className}/${studentId}`,
+            getTestPath: (className, studentId) => `tests/class_${className}/${studentId}`,
+            
+            // Format date for Firestore
+            formatDate: (date) => {
+                const d = new Date(date);
+                return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+            },
+            
+            // Format month-year for payments
+            formatMonthYear: (date) => {
+                const d = new Date(date);
+                return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+            }
+        };
+
         // Login functionality
         document.getElementById('loginForm').addEventListener('submit', function(e) {
             e.preventDefault();
@@ -2783,41 +2800,6 @@
                 alert('ভুল ইউজারনেম বা পাসওয়ার্ড!');
             }
         });
-
-        // Forgot password
-        document.getElementById('forgotPasswordLink').addEventListener('click', function(e) {
-            e.preventDefault();
-            document.getElementById('forgotPasswordModal').classList.add('active');
-        });
-
-        function closeForgotPassword() {
-            document.getElementById('forgotPasswordModal').classList.remove('active');
-            document.getElementById('codeSection').classList.add('hidden');
-        }
-
-        function sendResetCode() {
-            const email = document.getElementById('resetEmail').value;
-            const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
-            localStorage.setItem('resetCode', resetCode);
-            
-            // In production, send email via backend
-            alert(`রিসেট কোড ${email} এ পাঠানো হয়েছে।\nডেমোর জন্য কোড: ${resetCode}`);
-            document.getElementById('codeSection').classList.remove('hidden');
-        }
-
-        function resetPassword() {
-            const enteredCode = document.getElementById('resetCode').value;
-            const savedCode = localStorage.getItem('resetCode');
-            const newPassword = document.getElementById('newPassword').value;
-
-            if (enteredCode === savedCode) {
-                localStorage.setItem('adminPassword', newPassword);
-                alert('পাসওয়ার্ড সফলভাবে পরিবর্তন হয়েছে!');
-                closeForgotPassword();
-            } else {
-                alert('ভুল রিসেট কোড!');
-            }
-        }
 
         function logout() {
             document.getElementById('dashboard').style.display = 'none';
