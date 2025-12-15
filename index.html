@@ -4,6 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>কোচিং ম্যানেজমেন্ট সিস্টেম</title>
+    
+    <!-- Security Headers -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com; frame-src 'none'; object-src 'none'; base-uri 'self';">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    
     <link href="https://fonts.googleapis.com/css2?family=Baloo+Da+2:wght@400;500;600;700;800&family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -1078,7 +1086,7 @@
             <div class="public-search-section">
                 <div class="section-header">
                     <h2>🔍 শিক্ষার্থী খুঁজুন</h2>
-                    <p>যেকোনো শিক্ষার্থীর বিস্তারিত তথ্য দেখতে নামের উপর ক্লিক করুন</p>
+                    <p>শিক্ষার্থীর বিস্তারিত রিপোর্ট ডাউনলোড করতে নামের উপর ক্লিক করুন</p>
                 </div>
                 
                 <div class="search-bar" style="margin-bottom: 25px;">
@@ -1257,13 +1265,6 @@
             <div id="attendanceSection" class="content-section">
                 <h2 style="margin-bottom: 20px;">উপস্থিতি নিবন্ধন</h2>
                 
-                <!-- Download Attendance Report Button -->
-                <div style="display: flex; gap: 15px; margin-bottom: 25px; flex-wrap: wrap;">
-                    <button class="btn" style="background: var(--secondary); color: white; width: auto;" onclick="openAttendanceReportModal()">
-                        📥 উপস্থিতি রিপোর্ট ডাউনলোড করুন
-                    </button>
-                </div>
-                
                 <div class="search-bar">
                     <input type="date" id="attendanceDate" value="">
                     <select id="attendanceClass" onchange="loadAttendance()">
@@ -1302,24 +1303,10 @@
             <!-- Payments Section -->
             <div id="paymentsSection" class="content-section">
                 <h2 style="margin-bottom: 20px;">পেমেন্ট ট্র্যাকিং</h2>
-                <div class="search-bar">
-                    <select id="paymentMonth" onchange="loadPayments()">
-                        <option value="">সব মাস</option>
-                        <option value="জানুয়ারি">জানুয়ারি</option>
-                        <option value="ফেব্রুয়ারি">ফেব্রুয়ারি</option>
-                        <option value="মার্চ">মার্চ</option>
-                        <option value="এপ্রিল">এপ্রিল</option>
-                        <option value="মে">মে</option>
-                        <option value="জুন">জুন</option>
-                        <option value="জুলাই">জুলাই</option>
-                        <option value="আগস্ট">আগস্ট</option>
-                        <option value="সেপ্টেম্বর">সেপ্টেম্বর</option>
-                        <option value="অক্টোবর">অক্টোবর</option>
-                        <option value="নভেম্বর">নভেম্বর</option>
-                        <option value="ডিসেম্বর">ডিসেম্বর</option>
-                    </select>
-                    <select id="paymentClass" onchange="loadPayments()">
-                        <option value="">সব ক্লাস</option>
+                
+                <div class="search-bar" style="margin-bottom: 25px;">
+                    <select id="paymentClassFilter" onchange="loadPaymentsByClass()">
+                        <option value="">ক্লাস নির্বাচন করুন</option>
                         <option value="6">ক্লাস ৬</option>
                         <option value="7">ক্লাস ৭</option>
                         <option value="8">ক্লাস ৮</option>
@@ -1327,24 +1314,11 @@
                         <option value="10">ক্লাস ১০</option>
                         <option value="11">ক্লাস ১১</option>
                     </select>
+                    <input type="date" id="paymentDatePicker" style="padding: 12px; border: 2px solid var(--border); border-radius: 10px; font-size: 1em;">
                 </div>
 
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>নাম</th>
-                                <th>ক্লাস</th>
-                                <th>মাস</th>
-                                <th>মাসিক ফি</th>
-                                <th>পেমেন্ট তারিখ</th>
-                                <th>স্ট্যাটাস</th>
-                                <th>একশন</th>
-                            </tr>
-                        </thead>
-                        <tbody id="paymentsTableBody">
-                        </tbody>
-                    </table>
+                <div id="paymentStudentsList" style="display: grid; gap: 20px;">
+                    <!-- Students will be loaded here -->
                 </div>
             </div>
 
@@ -2398,7 +2372,11 @@
             });
         }
 
-        // Show detailed student information
+        // Show detailed student information in modal
+        async function showStudentDetailsModal(studentId) {
+            await showStudentDetails(studentId);
+        }
+
         async function showStudentDetails(studentId) {
             try {
                 const { collection, doc, getDoc, getDocs, query, where } = window.firestoreFunctions;
@@ -2584,6 +2562,15 @@
                                 </tbody>
                             </table>
                         </div>
+                    </div>
+
+                    <div style="margin-top: 30px; display: flex; gap: 15px; justify-content: center;">
+                        <button class="btn btn-primary" onclick="downloadStudentReport('${studentId}')" style="padding: 15px 40px; font-size: 1.1em;">
+                            📥 সম্পূর্ণ রিপোর্ট ডাউনলোড করুন
+                        </button>
+                        <button class="btn" onclick="closeStudentDetails()" style="padding: 15px 40px; font-size: 1.1em; background: var(--text-light); color: white;">
+                            বন্ধ করুন
+                        </button>
                     </div>
                 `;
                 
@@ -3098,78 +3085,425 @@
             }
         }
 
-        // Payment management with full edit functionality
-        async function loadPayments() {
-            const selectedClass = document.getElementById('paymentClass').value;
-            const selectedMonth = document.getElementById('paymentMonth').value;
+        // New Payment Tracking System - Class-based with date picker
+        async function loadPaymentsByClass() {
+            const selectedClass = document.getElementById('paymentClassFilter').value;
+            const paymentDate = document.getElementById('paymentDatePicker').value || new Date().toISOString().split('T')[0];
+            
+            if (!selectedClass) {
+                document.getElementById('paymentStudentsList').innerHTML = '<p style="text-align: center; padding: 40px; color: var(--text-light);">ক্লাস নির্বাচন করুন</p>';
+                return;
+            }
 
             try {
                 const { collection, getDocs, query, where } = window.firestoreFunctions;
                 
-                // Build query based on filters
-                let constraints = [];
+                // Get students of selected class
+                const studentsQuery = query(
+                    collection(window.db, 'students'),
+                    where('class', '==', selectedClass)
+                );
+                const studentsSnapshot = await getDocs(studentsQuery);
                 
-                if (selectedClass) {
-                    constraints.push(where('class', '==', selectedClass));
-                }
+                // Get payment date info
+                const date = new Date(paymentDate);
+                const monthNames = ['জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন', 'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর'];
+                const month = monthNames[date.getMonth()];
+                const year = date.getFullYear();
                 
-                if (selectedMonth) {
-                    constraints.push(where('month', '==', selectedMonth));
-                }
-                
-                let paymentsQuery;
-                if (constraints.length > 0) {
-                    paymentsQuery = query(collection(window.db, 'payments'), ...constraints);
-                } else {
-                    paymentsQuery = collection(window.db, 'payments');
-                }
+                // Get all payments
+                const paymentsSnapshot = await getDocs(collection(window.db, 'payments'));
+                const paymentsMap = {};
+                paymentsSnapshot.forEach(doc => {
+                    const payment = doc.data();
+                    const key = `${payment.studentId}-${payment.month}-${payment.year}`;
+                    paymentsMap[key] = { ...payment, id: doc.id };
+                });
 
-                const paymentsSnapshot = await getDocs(paymentsQuery);
-                const tbody = document.getElementById('paymentsTableBody');
-                tbody.innerHTML = '';
+                const container = document.getElementById('paymentStudentsList');
+                container.innerHTML = '';
 
-                if (paymentsSnapshot.empty) {
-                    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 30px;">কোনো পেমেন্ট রেকর্ড পাওয়া যায়নি</td></tr>';
+                if (studentsSnapshot.empty) {
+                    container.innerHTML = '<p style="text-align: center; padding: 40px;">কোনো শিক্ষার্থী পাওয়া যায়নি</p>';
                     return;
                 }
 
-                // Sort payments by date (newest first)
-                const payments = [];
-                paymentsSnapshot.forEach(doc => {
-                    payments.push({ id: doc.id, ...doc.data() });
-                });
+                studentsSnapshot.forEach(doc => {
+                    const student = doc.data();
+                    const studentId = doc.id;
+                    const paymentKey = `${studentId}-${month}-${year}`;
+                    const payment = paymentsMap[paymentKey];
+                    const isPaid = payment ? payment.isPaid : false;
 
-                // Sort by month and year
-                const months = ['জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন', 'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর'];
-                payments.sort((a, b) => {
-                    if (a.year !== b.year) return b.year - a.year;
-                    return months.indexOf(b.month) - months.indexOf(a.month);
-                });
-
-                payments.forEach(payment => {
-                    const row = tbody.insertRow();
-                    row.innerHTML = `
-                        <td>${payment.studentName}</td>
-                        <td>ক্লাস ${payment.class}</td>
-                        <td>${payment.month} ${payment.year}</td>
-                        <td>৳${payment.amount}</td>
-                        <td>${payment.dueDate || payment.paidDate || '-'}</td>
-                        <td>
-                            <span class="badge ${payment.isPaid ? 'paid' : 'unpaid'}">
-                                ${payment.isPaid ? '✓ পরিশোধিত' : '✗ বকেয়া'}
+                    const card = document.createElement('div');
+                    card.style.cssText = 'background: white; padding: 20px; border-radius: 15px; box-shadow: var(--shadow); display: flex; justify-content: space-between; align-items: center; border: 2px solid ' + (isPaid ? 'var(--secondary)' : 'var(--border)');
+                    
+                    card.innerHTML = `
+                        <div style="flex: 1;">
+                            <h3 style="margin: 0 0 10px 0; color: var(--text-dark);">${student.name}</h3>
+                            <p style="margin: 0; color: var(--text-light);">রোল: ${student.roll} | ক্লাস ${student.class} | মাসিক ফি: ৳${student.monthlyFee}</p>
+                            <p style="margin: 5px 0 0 0; color: var(--text-light); font-size: 0.9em;">পেমেন্ট মাস: ${month} ${year}</p>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <span class="badge ${isPaid ? 'paid' : 'unpaid'}" style="padding: 10px 20px; font-size: 1em;">
+                                ${isPaid ? '✓ পরিশোধিত' : '✗ বকেয়া'}
                             </span>
-                        </td>
-                        <td>
-                            <button class="action-btn edit" onclick="editPayment('${payment.id}')">এডিট</button>
-                            <button class="action-btn view" onclick="viewPaymentHistory('${payment.studentId}', '${payment.studentName}')">হিস্টরি</button>
-                            ${!payment.isPaid ? `<button class="action-btn" style="background: var(--secondary);" onclick="quickMarkAsPaid('${payment.id}')">পরিশোধ</button>` : ''}
-                        </td>
+                            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; background: var(--bg-light); padding: 12px 20px; border-radius: 10px;">
+                                <input type="checkbox" 
+                                    ${isPaid ? 'checked' : ''} 
+                                    onchange="togglePayment('${studentId}', '${student.name}', '${student.class}', '${student.monthlyFee}', '${month}', '${year}', '${paymentDate}', this.checked, '${payment ? payment.id : ''}')"
+                                    style="width: 25px; height: 25px; cursor: pointer;">
+                                <span style="font-weight: 600; color: var(--text-dark);">পেমেন্ট করেছে</span>
+                            </label>
+                        </div>
                     `;
+                    container.appendChild(card);
                 });
+
             } catch (error) {
                 console.error('Error loading payments:', error);
-                const tbody = document.getElementById('paymentsTableBody');
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 30px; color: red;">ডেটা লোড করতে সমস্যা হয়েছে। পেজ রিফ্রেশ করুন।</td></tr>';
+                alert('পেমেন্ট লোড করতে সমস্যা হয়েছে!');
+            }
+        }
+
+        async function togglePayment(studentId, studentName, studentClass, amount, month, year, paymentDate, isPaid, paymentId) {
+            try {
+                const { collection, addDoc, updateDoc, doc } = window.firestoreFunctions;
+                
+                if (paymentId) {
+                    // Update existing payment
+                    await updateDoc(doc(window.db, 'payments', paymentId), {
+                        isPaid: isPaid,
+                        paidDate: isPaid ? paymentDate : null
+                    });
+                } else {
+                    // Create new payment
+                    await addDoc(collection(window.db, 'payments'), {
+                        studentId: studentId,
+                        studentName: studentName,
+                        roll: document.querySelector(`[data-student-id="${studentId}"]`)?.dataset.roll || '',
+                        class: studentClass,
+                        month: month,
+                        year: year.toString(),
+                        amount: amount,
+                        isPaid: isPaid,
+                        paidDate: isPaid ? paymentDate : null,
+                        dueDate: `${parseInt(document.querySelector(`[data-student-id="${studentId}"]`)?.dataset.paymentDate || '5')}/${month}/${year}`
+                    });
+                }
+                
+                alert(isPaid ? 'পেমেন্ট সফলভাবে যোগ হয়েছে! ✅' : 'পেমেন্ট বাতিল করা হয়েছে');
+                loadPaymentsByClass(); // Reload
+                
+            } catch (error) {
+                console.error('Error toggling payment:', error);
+                alert('পেমেন্ট আপডেট করতে সমস্যা হয়েছে!');
+            }
+        }
+
+        // Display public students grid
+        function displayPublicStudentsGrid(students, today, attendanceSnapshot) {
+            const grid = document.getElementById('publicStudentsGrid');
+            grid.innerHTML = '';
+
+            if (students.length === 0) {
+                grid.innerHTML = '<p style="text-align: center; padding: 40px; color: var(--text-light);">কোনো শিক্ষার্থী পাওয়া যায়নি</p>';
+                return;
+            }
+
+            students.forEach(student => {
+                // Check attendance for today
+                let isPresent = false;
+                attendanceSnapshot.forEach(doc => {
+                    const attendance = doc.data();
+                    if (attendance.studentId === student.id && attendance.date === today) {
+                        isPresent = attendance.present;
+                    }
+                });
+
+                const initial = student.name.charAt(0);
+                const statusClass = isPresent ? 'present' : 'absent';
+                const statusIcon = isPresent ? '✓' : '✗';
+                const statusText = isPresent ? 'উপস্থিত' : 'অনুপস্থিত';
+
+                const card = document.createElement('div');
+                card.className = 'student-card';
+                card.onclick = () => showStudentDetailsModal(student.id);
+                card.innerHTML = `
+                    <div class="student-card-header">
+                        <div class="student-avatar">${initial}</div>
+                        <div class="student-info">
+                            <h3>${student.name}</h3>
+                            <p>রোল নং: ${student.roll}</p>
+                        </div>
+                    </div>
+                    <div class="student-card-body">
+                        <span class="student-class">ক্লাস ${student.class}</span>
+                        <span class="student-status ${statusClass}">${statusIcon} ${statusText}</span>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        async function downloadStudentReport(studentId) {
+            try {
+                const { collection, doc, getDoc, getDocs, query, where } = window.firestoreFunctions;
+                
+                // Show loading
+                alert('রিপোর্ট তৈরি হচ্ছে... অনুগ্রহ করে অপেক্ষা করুন');
+                
+                // Get student data
+                const studentDoc = await getDoc(doc(window.db, 'students', studentId));
+                const student = studentDoc.data();
+                
+                // Get attendance with dates
+                const attendanceQuery = query(collection(window.db, 'attendance'), where('studentId', '==', studentId));
+                const attendanceSnapshot = await getDocs(attendanceQuery);
+                let presentDates = [];
+                let absentDates = [];
+                attendanceSnapshot.forEach(doc => {
+                    const att = doc.data();
+                    if (att.present) {
+                        presentDates.push(att.date);
+                    } else {
+                        absentDates.push(att.date);
+                    }
+                });
+                presentDates.sort().reverse();
+                absentDates.sort().reverse();
+                const totalDays = presentDates.length + absentDates.length;
+                const attendancePercent = totalDays > 0 ? ((presentDates.length / totalDays) * 100).toFixed(1) : 0;
+                
+                // Get test results
+                const testsQuery = query(collection(window.db, 'tests'), where('studentId', '==', studentId));
+                const testsSnapshot = await getDocs(testsQuery);
+                const tests = [];
+                let totalMarks = 0, obtainedMarks = 0;
+                testsSnapshot.forEach(doc => {
+                    const test = doc.data();
+                    tests.push(test);
+                    totalMarks += parseInt(test.totalMarks);
+                    obtainedMarks += parseInt(test.marks);
+                });
+                tests.sort((a, b) => new Date(b.date) - new Date(a.date));
+                const avgPercentage = totalMarks > 0 ? ((obtainedMarks / totalMarks) * 100).toFixed(1) : 0;
+                
+                // Get payments with dates
+                const paymentsQuery = query(collection(window.db, 'payments'), where('studentId', '==', studentId));
+                const paymentsSnapshot = await getDocs(paymentsQuery);
+                let paidPayments = [];
+                let unpaidPayments = [];
+                paymentsSnapshot.forEach(doc => {
+                    const payment = doc.data();
+                    if (payment.isPaid) {
+                        paidPayments.push(payment);
+                    } else {
+                        unpaidPayments.push(payment);
+                    }
+                });
+
+                // Generate PDF report
+                const canvas = document.getElementById('reportCanvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = 2480;
+                canvas.height = 3508;
+
+                // Background
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // Header gradient
+                const gradient = ctx.createLinearGradient(0, 0, canvas.width, 250);
+                gradient.addColorStop(0, '#667eea');
+                gradient.addColorStop(1, '#764ba2');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, canvas.width, 250);
+
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 80px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('স্মার্ট কোচিং সেন্টার', canvas.width / 2, 110);
+                ctx.font = '50px Arial';
+                ctx.fillText('শিক্ষার্থীর সম্পূর্ণ রিপোর্ট', canvas.width / 2, 190);
+
+                // Student info
+                let y = 320;
+                ctx.fillStyle = '#1e293b';
+                ctx.font = 'bold 65px Arial';
+                ctx.fillText(student.name, canvas.width / 2, y);
+                y += 60;
+                ctx.font = '45px Arial';
+                ctx.fillText(`রোল: ${student.roll} | ক্লাস ${student.class} | ফোন: ${student.phone}`, canvas.width / 2, y);
+                y += 100;
+
+                // Stats section
+                ctx.textAlign = 'left';
+                
+                // Attendance section with dates
+                ctx.fillStyle = '#1e293b';
+                ctx.font = 'bold 50px Arial';
+                ctx.fillText('📊 উপস্থিতি বিবরণ', 140, y);
+                y += 70;
+
+                // Attendance percentage box
+                ctx.fillStyle = '#f0fdf4';
+                ctx.fillRect(140, y - 40, 1000, 100);
+                ctx.fillStyle = '#10b981';
+                ctx.font = 'bold 40px Arial';
+                ctx.fillText(`মোট উপস্থিতি: ${attendancePercent}% (${presentDates.length}/${totalDays} দিন)`, 180, y + 20);
+                y += 100;
+
+                // Present dates
+                ctx.fillStyle = '#1e293b';
+                ctx.font = 'bold 40px Arial';
+                ctx.fillText('✅ উপস্থিত ছিল:', 140, y);
+                y += 50;
+                
+                ctx.font = '32px Arial';
+                ctx.fillStyle = '#059669';
+                let col = 0;
+                const colWidth = 350;
+                const maxCols = 6;
+                presentDates.slice(0, 30).forEach((date, idx) => {
+                    const formattedDate = new Date(date).toLocaleDateString('bn-BD', { day: 'numeric', month: 'short' });
+                    ctx.fillText(`• ${formattedDate}`, 140 + (col * colWidth), y);
+                    col++;
+                    if (col >= maxCols) {
+                        col = 0;
+                        y += 45;
+                    }
+                });
+                if (col !== 0) y += 45;
+                y += 30;
+
+                // Absent dates
+                if (absentDates.length > 0) {
+                    ctx.font = 'bold 40px Arial';
+                    ctx.fillStyle = '#1e293b';
+                    ctx.fillText('❌ অনুপস্থিত ছিল:', 140, y);
+                    y += 50;
+                    
+                    ctx.font = '32px Arial';
+                    ctx.fillStyle = '#dc2626';
+                    col = 0;
+                    absentDates.slice(0, 30).forEach((date, idx) => {
+                        const formattedDate = new Date(date).toLocaleDateString('bn-BD', { day: 'numeric', month: 'short' });
+                        ctx.fillText(`• ${formattedDate}`, 140 + (col * colWidth), y);
+                        col++;
+                        if (col >= maxCols) {
+                            col = 0;
+                            y += 45;
+                        }
+                    });
+                    if (col !== 0) y += 45;
+                    y += 30;
+                }
+
+                // Test results section
+                y += 20;
+                ctx.fillStyle = '#1e293b';
+                ctx.font = 'bold 50px Arial';
+                ctx.fillText(`📝 পরীক্ষার ফলাফল (গড়: ${avgPercentage}%)`, 140, y);
+                y += 70;
+
+                tests.slice(0, 8).forEach(test => {
+                    const percentage = ((parseInt(test.marks) / parseInt(test.totalMarks)) * 100).toFixed(0);
+                    const gradeColor = percentage >= 80 ? '#10b981' : percentage >= 60 ? '#f59e0b' : '#ef4444';
+                    
+                    ctx.fillStyle = '#f8fafc';
+                    ctx.fillRect(140, y - 35, canvas.width - 280, 70);
+                    
+                    ctx.fillStyle = '#1e293b';
+                    ctx.font = '35px Arial';
+                    const formattedDate = new Date(test.date).toLocaleDateString('bn-BD', { day: 'numeric', month: 'short', year: 'numeric' });
+                    ctx.fillText(`${test.subject}`, 180, y);
+                    ctx.fillText(formattedDate, 750, y);
+                    
+                    ctx.fillStyle = gradeColor;
+                    ctx.font = 'bold 40px Arial';
+                    ctx.fillText(`${test.marks}/${test.totalMarks} (${percentage}%)`, 1500, y);
+                    
+                    y += 70;
+                });
+
+                // Payment section with dates
+                y += 30;
+                ctx.fillStyle = '#1e293b';
+                ctx.font = 'bold 50px Arial';
+                ctx.fillText('💰 পেমেন্ট বিবরণ', 140, y);
+                y += 70;
+
+                // Paid payments
+                if (paidPayments.length > 0) {
+                    ctx.font = 'bold 40px Arial';
+                    ctx.fillText('✅ পরিশোধিত পেমেন্ট:', 140, y);
+                    y += 50;
+                    
+                    ctx.font = '35px Arial';
+                    paidPayments.slice(0, 10).forEach(payment => {
+                        ctx.fillStyle = '#f8fafc';
+                        ctx.fillRect(140, y - 35, canvas.width - 280, 70);
+                        
+                        ctx.fillStyle = '#1e293b';
+                        ctx.fillText(`${payment.month} ${payment.year}`, 180, y);
+                        ctx.fillText(`৳${payment.amount}`, 750, y);
+                        
+                        ctx.fillStyle = '#10b981';
+                        ctx.font = 'bold 35px Arial';
+                        ctx.fillText(`পরিশোধিত - ${payment.paidDate || 'তারিখ নেই'}`, 1200, y);
+                        ctx.font = '35px Arial';
+                        
+                        y += 70;
+                    });
+                }
+
+                // Unpaid payments
+                if (unpaidPayments.length > 0) {
+                    y += 20;
+                    ctx.fillStyle = '#1e293b';
+                    ctx.font = 'bold 40px Arial';
+                    ctx.fillText('❌ বকেয়া পেমেন্ট:', 140, y);
+                    y += 50;
+                    
+                    ctx.font = '35px Arial';
+                    unpaidPayments.slice(0, 10).forEach(payment => {
+                        ctx.fillStyle = '#fef2f2';
+                        ctx.fillRect(140, y - 35, canvas.width - 280, 70);
+                        
+                        ctx.fillStyle = '#1e293b';
+                        ctx.fillText(`${payment.month} ${payment.year}`, 180, y);
+                        ctx.fillText(`৳${payment.amount}`, 750, y);
+                        
+                        ctx.fillStyle = '#dc2626';
+                        ctx.font = 'bold 35px Arial';
+                        ctx.fillText('বকেয়া', 1200, y);
+                        ctx.font = '35px Arial';
+                        
+                        y += 70;
+                    });
+                }
+
+                // Footer
+                ctx.fillStyle = '#64748b';
+                ctx.font = '32px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(`রিপোর্ট তৈরি: ${new Date().toLocaleDateString('bn-BD')}`, canvas.width / 2, 3400);
+
+                // Download
+                canvas.toBlob(blob => {
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = `রিপোর্ট-${student.name}-${student.roll}-বিস্তারিত.png`;
+                    link.click();
+                    URL.revokeObjectURL(url);
+                    alert('রিপোর্ট ডাউনলোড সম্পন্ন! ✅');
+                });
+
+            } catch (error) {
+                console.error('Error downloading report:', error);
+                alert('রিপোর্ট ডাউনলোড করতে সমস্যা হয়েছে!');
             }
         }
 
@@ -3421,3 +3755,28 @@
     </script>
 </body>
 </html>
+<script>
+// Edit student functionality
+async function editStudent(studentId) {
+    try {
+        const { doc, getDoc } = window.firestoreFunctions;
+        const studentDoc = await getDoc(doc(window.db, 'students', studentId));
+        const student = studentDoc.data();
+        
+        document.getElementById('studentRoll').value = student.roll;
+        document.getElementById('studentName').value = student.name;
+        document.getElementById('studentClass').value = student.class;
+        document.getElementById('studentPhone').value = student.phone;
+        document.getElementById('monthlyFee').value = student.monthlyFee;
+        document.getElementById('paymentDate').value = student.paymentDate;
+        document.getElementById('previousResult').value = student.previousResult;
+        
+        window.editingStudentId = studentId;
+        document.getElementById('addStudentModal').classList.add('active');
+        document.querySelector('#addStudentModal h2').textContent = 'শিক্ষার্থীর তথ্য এডিট করুন';
+    } catch (error) {
+        console.error('Error:', error);
+        alert('তথ্য লোড করতে সমস্যা হয়েছে!');
+    }
+}
+</script>
