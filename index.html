@@ -1222,6 +1222,7 @@
                 <button class="nav-tab" onclick="showTab('tests')">পরীক্ষার ফলাফল</button>
                 <button class="nav-tab" onclick="showTab('payments')">পেমেন্ট</button>
                 <button class="nav-tab" onclick="showTab('teachers')">শিক্ষক</button>
+                <button class="nav-tab" onclick="showTab('settings')">⚙️ সেটিংস</button>
             </div>
 
             <!-- Students Section -->
@@ -1291,6 +1292,71 @@
                         <tbody id="attendanceTableBody">
                         </tbody>
                     </table>
+                </div>
+            </div>
+
+            <!-- Admin Settings Section -->
+            <div id="settingsSection" class="content-section">
+                <h2 style="margin-bottom: 20px;">⚙️ অ্যাডমিন সেটিংস</h2>
+                
+                <div style="max-width: 800px;">
+                    <!-- Current Admin Info -->
+                    <div style="background: #eff6ff; padding: 25px; border-radius: 15px; margin-bottom: 30px; border-left: 5px solid var(--primary);">
+                        <h3 style="margin: 0 0 15px 0; color: var(--primary);">📋 বর্তমান অ্যাডমিন তথ্য</h3>
+                        <p style="margin: 5px 0;"><strong>Username:</strong> <span id="currentAdminEmail">Loading...</span></p>
+                        <p style="margin: 5px 0; font-size: 0.9em; color: var(--text-light);">পাসওয়ার্ড সুরক্ষিত রাখা হয়েছে</p>
+                    </div>
+
+                    <!-- Change Username -->
+                    <div style="background: white; padding: 30px; border-radius: 15px; box-shadow: var(--shadow); margin-bottom: 25px;">
+                        <h3 style="margin: 0 0 20px 0; color: var(--text-dark); display: flex; align-items: center; gap: 10px;">
+                            <span>👤</span> Username পরিবর্তন করুন
+                        </h3>
+                        <div class="form-group">
+                            <label>নতুন Username (Email)</label>
+                            <input type="email" id="newAdminEmail" placeholder="admin@example.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label>বর্তমান পাসওয়ার্ড (নিশ্চিত করতে)</label>
+                            <input type="password" id="confirmPasswordForEmail" placeholder="••••••••" required>
+                        </div>
+                        <button class="btn btn-primary" onclick="changeAdminEmail()">
+                            Username আপডেট করুন
+                        </button>
+                    </div>
+
+                    <!-- Change Password -->
+                    <div style="background: white; padding: 30px; border-radius: 15px; box-shadow: var(--shadow); margin-bottom: 25px;">
+                        <h3 style="margin: 0 0 20px 0; color: var(--text-dark); display: flex; align-items: center; gap: 10px;">
+                            <span>🔒</span> পাসওয়ার্ড পরিবর্তন করুন
+                        </h3>
+                        <div class="form-group">
+                            <label>বর্তমান পাসওয়ার্ড</label>
+                            <input type="password" id="currentPassword" placeholder="••••••••" required>
+                        </div>
+                        <div class="form-group">
+                            <label>নতুন পাসওয়ার্ড (কমপক্ষে ৮ অক্ষর)</label>
+                            <input type="password" id="newPassword" placeholder="••••••••" minlength="8" required>
+                        </div>
+                        <div class="form-group">
+                            <label>নতুন পাসওয়ার্ড নিশ্চিত করুন</label>
+                            <input type="password" id="confirmNewPassword" placeholder="••••••••" minlength="8" required>
+                        </div>
+                        <button class="btn btn-primary" onclick="changeAdminPassword()">
+                            পাসওয়ার্ড আপডেট করুন
+                        </button>
+                    </div>
+
+                    <!-- Security Tips -->
+                    <div style="background: #fef2f2; padding: 20px; border-radius: 15px; border-left: 5px solid #dc2626;">
+                        <h4 style="margin: 0 0 10px 0; color: #dc2626;">🔐 নিরাপত্তা পরামর্শ</h4>
+                        <ul style="margin: 0; padding-left: 20px; color: #7f1d1d;">
+                            <li>শক্তিশালী পাসওয়ার্ড ব্যবহার করুন (বড় হাতের অক্ষর, ছোট হাতের অক্ষর, সংখ্যা, চিহ্ন)</li>
+                            <li>প্রতি 3 মাসে পাসওয়ার্ড পরিবর্তন করুন</li>
+                            <li>কখনই পাসওয়ার্ড কারো সাথে শেয়ার করবেন না</li>
+                            <li>সন্দেহজনক কার্যকলাপ দেখলে অবিলম্বে পাসওয়ার্ড পরিবর্তন করুন</li>
+                        </ul>
+                    </div>
                 </div>
             </div>
 
@@ -2586,6 +2652,199 @@
         function closeStudentDetails() {
             document.getElementById('studentDetailsModal').classList.remove('active');
         }
+        // Initialize Firebase Auth functions globally
+        function initializeAuthFunctions() {
+            if (window.firebase && window.auth) {
+                window.authFunctions = {
+                    getAuth: () => window.auth,
+                    EmailAuthProvider: window.firebase.auth.EmailAuthProvider,
+                    reauthenticateWithCredential: (user, credential) => user.reauthenticateWithCredential(credential),
+                    updateEmail: (user, newEmail) => user.updateEmail(newEmail),
+                    updatePassword: (user, newPassword) => user.updatePassword(newPassword)
+                };
+                console.log('Auth functions initialized');
+            } else {
+                console.error('Firebase not initialized');
+            }
+        }
+
+        // Admin Settings Functions
+        async function loadAdminSettings() {
+            try {
+                if (!window.auth || !window.auth.currentUser) {
+                    console.error('No user logged in');
+                    return;
+                }
+                
+                document.getElementById('currentAdminEmail').textContent = window.auth.currentUser.email;
+            } catch (error) {
+                console.error('Error loading admin settings:', error);
+            }
+        }
+
+        // Change Admin Email/Username
+        async function changeAdminEmail() {
+            const newEmail = document.getElementById('newAdminEmail').value.trim();
+            const currentPassword = document.getElementById('confirmPasswordForEmail').value;
+
+            if (!newEmail || !currentPassword) {
+                alert('সব ফিল্ড পূরণ করুন!');
+                return;
+            }
+
+            // Email validation
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(newEmail)) {
+                alert('সঠিক Email ফরম্যাট ব্যবহার করুন!');
+                return;
+            }
+
+            try {
+                if (!window.auth || !window.auth.currentUser) {
+                    alert('❌ আপনি লগইন করা নেই! দয়া করে আবার লগইন করুন।');
+                    return;
+                }
+
+                const user = window.auth.currentUser;
+                const credential = window.firebase.auth.EmailAuthProvider.credential(user.email, currentPassword);
+                
+                // Re-authenticate
+                await user.reauthenticateWithCredential(credential);
+
+                // Update email
+                await user.updateEmail(newEmail);
+
+                alert('✅ Username সফলভাবে পরিবর্তন হয়েছে!\n\nনতুন Username: ' + newEmail + '\n\nদয়া করে নতুন username দিয়ে লগইন করুন।');
+                
+                // Clear fields
+                document.getElementById('newAdminEmail').value = '';
+                document.getElementById('confirmPasswordForEmail').value = '';
+                
+                // Logout and redirect to login
+                await window.auth.signOut();
+                location.reload();
+
+            } catch (error) {
+                console.error('Error changing email:', error);
+                if (error.code === 'auth/wrong-password') {
+                    alert('❌ ভুল পাসওয়ার্ড! আবার চেষ্টা করুন।');
+                } else if (error.code === 'auth/email-already-in-use') {
+                    alert('❌ এই Email ইতিমধ্যে ব্যবহৃত হচ্ছে!');
+                } else if (error.code === 'auth/requires-recent-login') {
+                    alert('❌ নিরাপত্তার জন্য, দয়া করে আবার লগইন করে চেষ্টা করুন।');
+                    await window.auth.signOut();
+                    location.reload();
+                } else {
+                    alert('❌ Email পরিবর্তন করতে সমস্যা হয়েছে: ' + error.message);
+                }
+            }
+        }
+
+        // Change Admin Password
+        async function changeAdminPassword() {
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmNewPassword').value;
+
+            // Validation
+            if (!currentPassword || !newPassword || !confirmPassword) {
+                alert('সব ফিল্ড পূরণ করুন!');
+                return;
+            }
+
+            if (newPassword.length < 8) {
+                alert('নতুন পাসওয়ার্ড কমপক্ষে ৮ অক্ষরের হতে হবে!');
+                return;
+            }
+
+            if (newPassword !== confirmPassword) {
+                alert('নতুন পাসওয়ার্ড মিলছে না!');
+                return;
+            }
+
+            if (currentPassword === newPassword) {
+                alert('নতুন পাসওয়ার্ড পুরাতন পাসওয়ার্ড থেকে ভিন্ন হতে হবে!');
+                return;
+            }
+
+            // Password strength check
+            const hasUpperCase = /[A-Z]/.test(newPassword);
+            const hasLowerCase = /[a-z]/.test(newPassword);
+            const hasNumbers = /\d/.test(newPassword);
+
+            if (!hasUpperCase || !hasLowerCase || !hasNumbers) {
+                alert('পাসওয়ার্ড অবশ্যই বড় হাতের অক্ষর, ছোট হাতের অক্ষর এবং সংখ্যা থাকতে হবে!');
+                return;
+            }
+
+            try {
+                if (!window.auth || !window.auth.currentUser) {
+                    alert('❌ আপনি লগইন করা নেই! দয়া করে আবার লগইন করুন।');
+                    return;
+                }
+
+                const user = window.auth.currentUser;
+                const credential = window.firebase.auth.EmailAuthProvider.credential(user.email, currentPassword);
+                
+                // Re-authenticate
+                await user.reauthenticateWithCredential(credential);
+
+                // Update password
+                await user.updatePassword(newPassword);
+
+                alert('✅ পাসওয়ার্ড সফলভাবে পরিবর্তন হয়েছে!\n\nনতুন পাসওয়ার্ড দিয়ে আবার লগইন করুন।');
+                
+                // Clear fields
+                document.getElementById('currentPassword').value = '';
+                document.getElementById('newPassword').value = '';
+                document.getElementById('confirmNewPassword').value = '';
+                
+                // Logout and redirect to login
+                await window.auth.signOut();
+                location.reload();
+
+            } catch (error) {
+                console.error('Error changing password:', error);
+                if (error.code === 'auth/wrong-password') {
+                    alert('❌ বর্তমান পাসওয়ার্ড ভুল! আবার চেষ্টা করুন।');
+                } else if (error.code === 'auth/requires-recent-login') {
+                    alert('❌ নিরাপত্তার জন্য, দয়া করে আবার লগইন করে চেষ্টা করুন।');
+                    await window.auth.signOut();
+                    location.reload();
+                } else {
+                    alert('❌ পাসওয়ার্ড পরিবর্তন করতে সমস্যা হয়েছে: ' + error.message);
+                }
+            }
+        }
+
+        // Update showTab function to load settings
+        function showTab(tabName) {
+            // Hide all sections
+            const sections = document.querySelectorAll('.content-section');
+            sections.forEach(section => section.classList.remove('active'));
+            
+            // Remove active class from all tabs
+            const tabs = document.querySelectorAll('.nav-tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            // Show selected section
+            const sectionId = tabName + 'Section';
+            const section = document.getElementById(sectionId);
+            if (section) {
+                section.classList.add('active');
+            }
+            
+            // Add active class to clicked tab
+            if (event && event.target) {
+                event.target.classList.add('active');
+            }
+            
+            // Load settings if settings tab
+            if (tabName === 'settings') {
+                loadAdminSettings();
+            }
+        }
+
         // Login functionality
         document.getElementById('loginForm').addEventListener('submit', function(e) {
             e.preventDefault();
