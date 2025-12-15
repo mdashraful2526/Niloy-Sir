@@ -1159,29 +1159,6 @@
     </div>
 
     <!-- Public View -->
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>পাসওয়ার্ড রিসেট</h2>
-                <span class="close-modal" onclick="closeForgotPassword()">&times;</span>
-            </div>
-            <div class="form-group">
-                <label>ইমেইল</label>
-                <input type="email" id="resetEmail" value="mraj52229@gmail.com" readonly>
-            </div>
-            <button class="btn btn-primary" onclick="sendResetCode()">কোড পাঠান</button>
-            <div id="codeSection" class="hidden" style="margin-top: 20px;">
-                <div class="form-group">
-                    <label>রিসেট কোড</label>
-                    <input type="text" id="resetCode" placeholder="6 ডিজিটের কোড">
-                </div>
-                <div class="form-group">
-                    <label>নতুন পাসওয়ার্ড</label>
-                    <input type="password" id="newPassword" placeholder="নতুন পাসওয়ার্ড">
-                </div>
-                <button class="btn btn-secondary" onclick="resetPassword()">পাসওয়ার্ড পরিবর্তন করুন</button>
-            </div>
-        </div>
-    </div>
 
     <!-- Dashboard -->
     <div id="dashboard" class="dashboard">
@@ -1295,135 +1272,45 @@
             <div id="settingsSection" class="content-section">
                 <h2 style="margin-bottom: 20px;">⚙️ অ্যাডমিন সেটিংস</h2>
                 
-                <div style="max-width: 900px;">
+                <div style="max-width: 800px;">
                     
-                    <!-- Security Notice -->
-                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 15px; margin-bottom: 30px; color: white;">
-                        <h3 style="margin: 0 0 15px 0; display: flex; align-items: center; gap: 10px; font-size: 1.5em;">
-                            <span>🔒</span> নিরাপত্তা নীতি
-                        </h3>
-                        <p style="margin: 0; font-size: 1.1em; line-height: 1.8; opacity: 0.95;">
-                            <strong>গুরুত্বপূর্ণ:</strong> এই সিস্টেমে Admin Username এবং Password পরিবর্তন করার জন্য 
-                            সরাসরি <strong>Firebase Console</strong> ব্যবহার করতে হবে। নিরাপত্তার জন্য, 
-                            এই পেজ থেকে কোনো পরিবর্তন করা যাবে না।
-                        </p>
+                    <!-- Current Admin Info -->
+                    <div style="background: #eff6ff; padding: 25px; border-radius: 15px; margin-bottom: 30px; border-left: 5px solid var(--primary);">
+                        <h3 style="margin: 0 0 15px 0; color: var(--primary);">📋 বর্তমান অ্যাডমিন তথ্য</h3>
+                        <p style="margin: 5px 0;"><strong>Username:</strong> <span id="currentAdminUsername">Loading...</span></p>
+                        <p style="margin: 5px 0; font-size: 0.9em; color: var(--text-light);">পাসওয়ার্ড সুরক্ষিত রাখা হয়েছে</p>
                     </div>
 
-                    <!-- Current Admin Info Display -->
-                    <div style="background: white; padding: 30px; border-radius: 15px; box-shadow: var(--shadow); margin-bottom: 30px;">
-                        <h3 style="margin: 0 0 20px 0; color: var(--primary); display: flex; align-items: center; gap: 10px;">
-                            <span>👤</span> বর্তমান অ্যাডমিন তথ্য
-                        </h3>
-                        <div style="background: #f8fafc; padding: 20px; border-radius: 10px; border-left: 4px solid var(--primary);">
-                            <p style="margin: 0 0 10px 0; font-size: 1.1em;">
-                                <strong>Username (Email):</strong> 
-                                <span id="currentAdminEmail" style="color: var(--primary); font-weight: 600;">Loading...</span>
-                            </p>
-                            <p style="margin: 0; color: var(--text-light); font-size: 0.95em;">
-                                🔐 পাসওয়ার্ড সুরক্ষিত রাখা হয়েছে (দেখানো হবে না)
-                            </p>
-                        </div>
-                    </div>
-
-                    <!-- Firebase Console Instructions -->
-                    <div style="background: white; padding: 35px; border-radius: 15px; box-shadow: var(--shadow); margin-bottom: 30px;">
-                        <h3 style="margin: 0 0 25px 0; color: var(--text-dark); display: flex; align-items: center; gap: 10px; font-size: 1.3em;">
-                            <span>🔥</span> Firebase Console থেকে পরিবর্তন করুন
-                        </h3>
-                        
-                        <!-- Step by Step Instructions -->
-                        <div style="background: #fffbeb; padding: 25px; border-radius: 12px; margin-bottom: 25px; border-left: 5px solid #f59e0b;">
-                            <h4 style="margin: 0 0 15px 0; color: #92400e; font-size: 1.1em;">
-                                📝 Username (Email) পরিবর্তন করার ধাপ:
-                            </h4>
-                            <ol style="margin: 0; padding-left: 25px; color: #78350f; line-height: 2;">
-                                <li><strong>Firebase Console খুলুন:</strong> <code style="background: white; padding: 3px 8px; border-radius: 4px;">https://console.firebase.google.com</code></li>
-                                <li><strong>Authentication</strong> সেকশনে যান</li>
-                                <li><strong>Users</strong> ট্যাবে ক্লিক করুন</li>
-                                <li>Admin user খুঁজুন এবং <strong>⋮</strong> (menu) ক্লিক করুন</li>
-                                <li><strong>Edit</strong> সিলেক্ট করুন</li>
-                                <li><strong>Email</strong> ফিল্ডে নতুন email লিখুন</li>
-                                <li><strong>Save</strong> করুন</li>
-                                <li>নতুন email দিয়ে আবার লগইন করুন</li>
-                            </ol>
-                        </div>
-
-                        <div style="background: #fef2f2; padding: 25px; border-radius: 12px; border-left: 5px solid #dc2626;">
-                            <h4 style="margin: 0 0 15px 0; color: #991b1b; font-size: 1.1em;">
-                                🔐 Password পরিবর্তন করার ধাপ:
-                            </h4>
-                            <ol style="margin: 0; padding-left: 25px; color: #7f1d1d; line-height: 2;">
-                                <li><strong>Firebase Console খুলুন:</strong> <code style="background: white; padding: 3px 8px; border-radius: 4px;">https://console.firebase.google.com</code></li>
-                                <li><strong>Authentication</strong> → <strong>Users</strong> এ যান</li>
-                                <li>Admin user select করুন</li>
-                                <li><strong>⋮</strong> (menu) → <strong>Edit</strong> ক্লিক করুন</li>
-                                <li><strong>Password</strong> ফিল্ডে নতুন password লিখুন</li>
-                                <li><strong>Save</strong> করুন</li>
-                                <li>নতুন password দিয়ে আবার লগইন করুন</li>
-                            </ol>
-                        </div>
-
-                        <!-- Visual Guide -->
-                        <div style="margin-top: 25px; padding: 20px; background: #eff6ff; border-radius: 10px; text-align: center;">
-                            <p style="margin: 0 0 10px 0; color: #1e40af; font-weight: 600; font-size: 1.05em;">
-                                📍 Firebase Console Path:
-                            </p>
-                            <code style="background: white; padding: 12px 20px; border-radius: 8px; display: inline-block; color: #1e3a8a; font-size: 0.95em; border: 2px dashed #3b82f6;">
-                                Firebase Console → Authentication → Users → Admin User → Edit
-                            </code>
-                        </div>
-                    </div>
-
-                    <!-- Security Best Practices -->
-                    <div style="background: white; padding: 30px; border-radius: 15px; box-shadow: var(--shadow);">
+                    <!-- Edit Admin Credentials -->
+                    <div style="background: white; padding: 30px; border-radius: 15px; box-shadow: var(--shadow); margin-bottom: 25px;">
                         <h3 style="margin: 0 0 20px 0; color: var(--text-dark); display: flex; align-items: center; gap: 10px;">
-                            <span>🛡️</span> নিরাপত্তা সুপারিশ
+                            <span>✏️</span> অ্যাডমিন তথ্য পরিবর্তন করুন
                         </h3>
                         
-                        <div style="display: grid; gap: 15px;">
-                            <div style="padding: 15px; background: #f0fdf4; border-left: 4px solid #10b981; border-radius: 8px;">
-                                <strong style="color: #065f46;">✅ শক্তিশালী পাসওয়ার্ড ব্যবহার করুন:</strong>
-                                <p style="margin: 8px 0 0 0; color: #047857; font-size: 0.95em;">
-                                    কমপক্ষে ১২ অক্ষর, বড় হাতের অক্ষর, ছোট হাতের অক্ষর, সংখ্যা এবং বিশেষ চিহ্ন (@#$%^&*)
-                                </p>
-                            </div>
-                            
-                            <div style="padding: 15px; background: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 8px;">
-                                <strong style="color: #92400e;">⏰ নিয়মিত পরিবর্তন করুন:</strong>
-                                <p style="margin: 8px 0 0 0; color: #78350f; font-size: 0.95em;">
-                                    প্রতি ৩ মাসে একবার password পরিবর্তন করুন নিরাপত্তার জন্য
-                                </p>
-                            </div>
-                            
-                            <div style="padding: 15px; background: #fee2e2; border-left: 4px solid #ef4444; border-radius: 8px;">
-                                <strong style="color: #991b1b;">🚫 শেয়ার করবেন না:</strong>
-                                <p style="margin: 8px 0 0 0; color: #7f1d1d; font-size: 0.95em;">
-                                    কখনই আপনার login credentials কারো সাথে শেয়ার করবেন না
-                                </p>
-                            </div>
-                            
-                            <div style="padding: 15px; background: #ede9fe; border-left: 4px solid #8b5cf6; border-radius: 8px;">
-                                <strong style="color: #5b21b6;">🔍 সতর্ক থাকুন:</strong>
-                                <p style="margin: 8px 0 0 0; color: #6b21a8; font-size: 0.95em;">
-                                    সন্দেহজনক কার্যকলাপ দেখলে অবিলম্বে password পরিবর্তন করুন
-                                </p>
-                            </div>
+                        <div class="form-group">
+                            <label>নতুন Username</label>
+                            <input type="text" id="editAdminUsername" placeholder="admin" required>
                         </div>
+                        
+                        <div class="form-group">
+                            <label>নতুন Password (কমপক্ষে ৬ অক্ষর)</label>
+                            <input type="password" id="editAdminPassword" placeholder="••••••" minlength="6" required>
+                        </div>
+                        
+                        <button class="btn btn-primary" onclick="updateAdminCredentials()">
+                            আপডেট করুন
+                        </button>
                     </div>
 
-                    <!-- Quick Access Button -->
-                    <div style="margin-top: 30px; text-align: center;">
-                        <a href="https://console.firebase.google.com" target="_blank" 
-                           style="display: inline-block; background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%); 
-                                  color: white; padding: 18px 40px; border-radius: 12px; text-decoration: none; 
-                                  font-weight: 600; font-size: 1.1em; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3); 
-                                  transition: transform 0.2s, box-shadow 0.2s;"
-                           onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(239, 68, 68, 0.4)';"
-                           onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(239, 68, 68, 0.3)';">
-                            🔥 Firebase Console খুলুন
-                        </a>
+                    <!-- Instructions -->
+                    <div style="background: #fef2f2; padding: 20px; border-radius: 15px; border-left: 5px solid #dc2626;">
+                        <h4 style="margin: 0 0 10px 0; color: #dc2626;">🔐 নিরাপত্তা পরামর্শ</h4>
+                        <ul style="margin: 0; padding-left: 20px; color: #7f1d1d;">
+                            <li>শক্তিশালী পাসওয়ার্ড ব্যবহার করুন (বড় হাতের অক্ষর, ছোট হাতের অক্ষর, সংখ্যা)</li>
+                            <li>পরিবর্তন করার পর নতুন তথ্য দিয়ে লগইন করুন</li>
+                            <li>কখনই পাসওয়ার্ড কারো সাথে শেয়ার করবেন না</li>
+                        </ul>
                     </div>
-
                 </div>
             </div>
 
@@ -2722,17 +2609,84 @@
         // Admin Settings Functions
         async function loadAdminSettings() {
             try {
-                if (!window.auth || !window.auth.currentUser) {
-                    console.error('No user logged in');
-                    document.getElementById('currentAdminEmail').textContent = 'লগইন করা নেই';
-                    return;
-                }
+                const { collection, getDocs } = window.firestoreFunctions;
                 
-                // Display current admin email
-                document.getElementById('currentAdminEmail').textContent = window.auth.currentUser.email;
+                // Load admin data from Firestore
+                const adminSnapshot = await getDocs(collection(window.db, 'admin'));
+                
+                if (!adminSnapshot.empty) {
+                    const adminData = adminSnapshot.docs[0].data();
+                    document.getElementById('currentAdminUsername').textContent = adminData.username || 'admin';
+                    document.getElementById('editAdminUsername').value = adminData.username || 'admin';
+                } else {
+                    // Create default admin if not exists
+                    await createDefaultAdmin();
+                }
             } catch (error) {
                 console.error('Error loading admin settings:', error);
-                document.getElementById('currentAdminEmail').textContent = 'Error loading';
+                document.getElementById('currentAdminUsername').textContent = 'admin';
+            }
+        }
+
+        // Create default admin in Firestore
+        async function createDefaultAdmin() {
+            try {
+                const { collection, addDoc } = window.firestoreFunctions;
+                
+                await addDoc(collection(window.db, 'admin'), {
+                    username: 'admin',
+                    password: 'admin123',
+                    createdAt: new Date(),
+                    updatedAt: new Date()
+                });
+                
+                console.log('Default admin created');
+            } catch (error) {
+                console.error('Error creating default admin:', error);
+            }
+        }
+
+        // Update admin credentials in Firestore
+        async function updateAdminCredentials() {
+            const newUsername = document.getElementById('editAdminUsername').value.trim();
+            const newPassword = document.getElementById('editAdminPassword').value.trim();
+
+            if (!newUsername || !newPassword) {
+                alert('সব ফিল্ড পূরণ করুন!');
+                return;
+            }
+
+            if (newPassword.length < 6) {
+                alert('পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে!');
+                return;
+            }
+
+            try {
+                const { collection, getDocs, doc, updateDoc } = window.firestoreFunctions;
+                
+                // Get admin document
+                const adminSnapshot = await getDocs(collection(window.db, 'admin'));
+                
+                if (!adminSnapshot.empty) {
+                    const adminDocRef = adminSnapshot.docs[0].ref;
+                    
+                    // Update admin credentials
+                    await updateDoc(adminDocRef, {
+                        username: newUsername,
+                        password: newPassword,
+                        updatedAt: new Date()
+                    });
+                    
+                    alert('✅ অ্যাডমিন তথ্য সফলভাবে আপডেট হয়েছে!\n\nনতুন তথ্য:\nUsername: ' + newUsername + '\n\nদয়া করে নতুন তথ্য দিয়ে আবার লগইন করুন।');
+                    
+                    // Logout
+                    logout();
+                } else {
+                    alert('❌ Admin তথ্য পাওয়া যায়নি!');
+                }
+            } catch (error) {
+                console.error('Error updating admin:', error);
+                alert('❌ আপডেট করতে সমস্যা হয়েছে: ' + error.message);
             }
         }
 
@@ -2786,18 +2740,46 @@
         };
 
         // Login functionality
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
 
-            if (username === 'demo' && password === 'demo') {
-                document.getElementById('publicView').style.display = 'none';
-                document.getElementById('loginPage').style.display = 'none';
-                document.getElementById('dashboard').style.display = 'block';
-                loadDashboardData();
-            } else {
-                alert('ভুল ইউজারনেম বা পাসওয়ার্ড!');
+            try {
+                const { collection, getDocs } = window.firestoreFunctions;
+                
+                // Get admin credentials from Firestore
+                const adminSnapshot = await getDocs(collection(window.db, 'admin'));
+                
+                if (!adminSnapshot.empty) {
+                    const adminData = adminSnapshot.docs[0].data();
+                    
+                    // Check credentials
+                    if (username === adminData.username && password === adminData.password) {
+                        document.getElementById('publicView').style.display = 'none';
+                        document.getElementById('loginPage').style.display = 'none';
+                        document.getElementById('dashboard').style.display = 'block';
+                        loadDashboardData();
+                    } else {
+                        alert('❌ ভুল ইউজারনেম বা পাসওয়ার্ড!');
+                    }
+                } else {
+                    // First time - create default admin and allow login
+                    if (username === 'admin' && password === 'admin123') {
+                        await createDefaultAdmin();
+                        document.getElementById('publicView').style.display = 'none';
+                        document.getElementById('loginPage').style.display = 'none';
+                        document.getElementById('dashboard').style.display = 'block';
+                        loadDashboardData();
+                        
+                        alert('ℹ️ Default admin তৈরি হয়েছে। দয়া করে সেটিংস থেকে পাসওয়ার্ড পরিবর্তন করুন!');
+                    } else {
+                        alert('❌ ভুল ইউজারনেম বা পাসওয়ার্ড!');
+                    }
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                alert('❌ লগইন করতে সমস্যা হয়েছে: ' + error.message);
             }
         });
 
