@@ -2748,52 +2748,61 @@
                     console.log('⚠️ Admin creation skipped:', error.message);
                 }
                 
-                // 2. Create Demo Students for each class
-                const classes = ['6', '7', '8', '9', '10', '11'];
+                // 2. Create Demo Students - NESTED STRUCTURE
                 const demoStudents = {
-                    '6': [
+                    'class_6': [
                         { roll: '601', name: 'আবির হোসেন', phone: '01712345678', monthlyFee: 1500, paymentDate: '5', previousResult: 'A+' },
                         { roll: '602', name: 'সাদিয়া আক্তার', phone: '01812345678', monthlyFee: 1500, paymentDate: '5', previousResult: 'A' },
                         { roll: '603', name: 'রাফি করিম', phone: '01912345678', monthlyFee: 1500, paymentDate: '10', previousResult: 'A-' }
                     ],
-                    '7': [
+                    'class_7': [
                         { roll: '701', name: 'তানিয়া রহমান', phone: '01712345679', monthlyFee: 1500, paymentDate: '5', previousResult: 'A+' },
                         { roll: '702', name: 'শাহরিয়ার খান', phone: '01812345679', monthlyFee: 1500, paymentDate: '5', previousResult: 'A' }
                     ],
-                    '8': [
+                    'class_8': [
                         { roll: '801', name: 'নাফিসা ইসলাম', phone: '01712345680', monthlyFee: 1600, paymentDate: '5', previousResult: 'A+' },
                         { roll: '802', name: 'মাহমুদ হাসান', phone: '01812345680', monthlyFee: 1600, paymentDate: '5', previousResult: 'A' }
                     ],
-                    '9': [
+                    'class_9': [
                         { roll: '901', name: 'রিয়া সুলতানা', phone: '01712345681', monthlyFee: 1700, paymentDate: '5', previousResult: 'A+' },
                         { roll: '902', name: 'ইমরান হোসেন', phone: '01812345681', monthlyFee: 1700, paymentDate: '10', previousResult: 'A-' }
                     ],
-                    '10': [
+                    'class_10': [
                         { roll: '1001', name: 'জান্নাত আরা', phone: '01712345682', monthlyFee: 1800, paymentDate: '5', previousResult: 'A+' },
                         { roll: '1002', name: 'তৌহিদ রহমান', phone: '01812345682', monthlyFee: 1800, paymentDate: '5', previousResult: 'A' }
                     ],
-                    '11': [
+                    'class_11': [
                         { roll: '1101', name: 'মারিয়া খান', phone: '01712345683', monthlyFee: 2000, paymentDate: '5', previousResult: 'A+' },
                         { roll: '1102', name: 'রাকিব উদ্দিন', phone: '01812345683', monthlyFee: 2000, paymentDate: '10', previousResult: 'A' }
                     ]
                 };
                 
-                // Add demo students
-                for (const cls of classes) {
+                // Add students with nested structure: students/class_X/student_name
+                for (const className in demoStudents) {
                     try {
-                        const students = demoStudents[cls];
+                        const students = demoStudents[className];
+                        const classNum = className.replace('class_', '');
+                        
                         for (const student of students) {
-                            const studentId = `student_${cls}_${student.roll}`;
-                            await setDoc(doc(window.db, 'students', studentId), {
-                                ...student,
-                                class: cls,
+                            // Use student name as document ID (cleaned)
+                            const studentDocId = `student_${classNum}_${student.roll}`;
+                            
+                            // Path: students/class_6/আবির_হোসেন
+                            await setDoc(doc(window.db, 'students', className, studentDocId), {
+                                roll: student.roll,
+                                name: student.name,
+                                class: classNum,
+                                phone: student.phone,
+                                monthlyFee: student.monthlyFee,
+                                paymentDate: student.paymentDate,
+                                previousResult: student.previousResult,
                                 createdAt: new Date(),
                                 updatedAt: new Date()
                             });
                         }
-                        console.log(`✅ Added ${students.length} demo students to class ${cls}`);
+                        console.log(`✅ Added ${students.length} students to ${className}`);
                     } catch (error) {
-                        console.log(`⚠️ Students for class ${cls} skipped:`, error.message);
+                        console.log(`⚠️ Students for ${className} skipped:`, error.message);
                     }
                 }
                 
@@ -2818,74 +2827,86 @@
                     console.log('⚠️ Teachers skipped:', error.message);
                 }
                 
-                // 4. Create Demo Attendance (Today)
+                // 4. Create Demo Attendance - NESTED: attendance/class_X/date/student_name
                 const today = new Date().toISOString().split('T')[0];
-                for (const cls of classes) {
+                for (const className in demoStudents) {
                     try {
-                        const students = demoStudents[cls];
+                        const students = demoStudents[className];
+                        const classNum = className.replace('class_', '');
+                        
                         for (let i = 0; i < students.length; i++) {
                             const student = students[i];
-                            const studentId = `student_${cls}_${student.roll}`;
-                            await setDoc(doc(window.db, 'attendance', `${cls}_${today}_${studentId}`), {
-                                studentId: studentId,
+                            const studentDocId = `student_${classNum}_${student.roll}`;
+                            
+                            // Path: attendance/class_6/2025-12-16/আবির_হোসেন
+                            await setDoc(doc(window.db, 'attendance', className, today, studentDocId), {
+                                studentId: studentDocId,
                                 studentName: student.name,
                                 studentRoll: student.roll,
-                                class: cls,
+                                class: classNum,
                                 date: today,
-                                present: i % 2 === 0, // Alternate present/absent
+                                present: i % 2 === 0,
                                 timestamp: new Date()
                             });
                         }
-                        console.log(`✅ Added attendance for class ${cls}`);
+                        console.log(`✅ Added attendance for ${className}`);
                     } catch (error) {
-                        console.log(`⚠️ Attendance for class ${cls} skipped:`, error.message);
+                        console.log(`⚠️ Attendance for ${className} skipped:`, error.message);
                     }
                 }
                 
-                // 5. Create Demo Payments
+                // 5. Create Demo Payments - NESTED: payments/class_X/student_name/month
                 const months = ['জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন', 'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর'];
                 const currentMonth = new Date().getMonth();
                 
-                for (const cls of classes) {
+                for (const className in demoStudents) {
                     try {
-                        const students = demoStudents[cls];
+                        const students = demoStudents[className];
+                        const classNum = className.replace('class_', '');
+                        
                         for (const student of students) {
-                            const studentId = `student_${cls}_${student.roll}`;
-                            // Add payment for current month
-                            await setDoc(doc(window.db, 'payments', `${studentId}_${currentMonth + 1}_2024`), {
-                                studentId: studentId,
+                            const studentDocId = `student_${classNum}_${student.roll}`;
+                            
+                            // Path: payments/class_6/আবির_হোসেন/2024-12
+                            await setDoc(doc(window.db, 'payments', className, studentDocId, `2024-${String(currentMonth + 1).padStart(2, '0')}`), {
+                                studentId: studentDocId,
                                 studentName: student.name,
                                 studentRoll: student.roll,
-                                class: cls,
+                                class: classNum,
                                 month: months[currentMonth],
                                 year: '2024',
                                 amount: student.monthlyFee,
-                                isPaid: Math.random() > 0.3, // 70% paid
-                                paidDate: student.paymentDate + '-' + (currentMonth + 1) + '-2024',
+                                isPaid: Math.random() > 0.3,
+                                paidDate: `${student.paymentDate}-${String(currentMonth + 1).padStart(2, '0')}-2024`,
                                 timestamp: new Date()
                             });
                         }
-                        console.log(`✅ Added payments for class ${cls}`);
+                        console.log(`✅ Added payments for ${className}`);
                     } catch (error) {
-                        console.log(`⚠️ Payments for class ${cls} skipped:`, error.message);
+                        console.log(`⚠️ Payments for ${className} skipped:`, error.message);
                     }
                 }
                 
-                // 6. Create Demo Tests
+                // 6. Create Demo Tests - NESTED: tests/class_X/student_name/test_id
                 const subjects = ['বাংলা', 'ইংরেজি', 'গণিত', 'বিজ্ঞান'];
-                for (const cls of classes) {
+                for (const className in demoStudents) {
                     try {
-                        const students = demoStudents[cls];
+                        const students = demoStudents[className];
+                        const classNum = className.replace('class_', '');
+                        
                         for (const student of students) {
-                            const studentId = `student_${cls}_${student.roll}`;
+                            const studentDocId = `student_${classNum}_${student.roll}`;
+                            
                             for (let i = 0; i < 2; i++) {
                                 const subject = subjects[i];
-                                const marks = Math.floor(Math.random() * 30) + 70; // 70-100
-                                await setDoc(doc(window.db, 'tests', `${studentId}_${subject}_test${i + 1}`), {
-                                    studentId: studentId,
+                                const marks = Math.floor(Math.random() * 30) + 70;
+                                
+                                // Path: tests/class_6/আবির_হোসেন/test_বাংলা_1
+                                await setDoc(doc(window.db, 'tests', className, studentDocId, `test_${subject}_${i + 1}`), {
+                                    studentId: studentDocId,
                                     studentName: student.name,
                                     studentRoll: student.roll,
-                                    class: cls,
+                                    class: classNum,
                                     subject: subject,
                                     date: `2024-12-${10 + i}`,
                                     marks: marks,
@@ -2894,25 +2915,23 @@
                                 });
                             }
                         }
-                        console.log(`✅ Added test results for class ${cls}`);
+                        console.log(`✅ Added test results for ${className}`);
                     } catch (error) {
-                        console.log(`⚠️ Tests for class ${cls} skipped:`, error.message);
+                        console.log(`⚠️ Tests for ${className} skipped:`, error.message);
                     }
                 }
                 
                 console.log('✅ Database initialization complete!');
-                console.log('📊 Demo data added:');
-                console.log('   ✅ Admin account');
-                console.log('   ✅ 15+ Students (across all classes)');
-                console.log('   ✅ 4 Teachers');
-                console.log('   ✅ Today\'s attendance');
-                console.log('   ✅ Current month payments');
-                console.log('   ✅ Test results');
+                console.log('📊 Nested structure created:');
+                console.log('   ├── students/class_6/student_name/');
+                console.log('   ├── attendance/class_6/date/student_name/');
+                console.log('   ├── payments/class_6/student_name/month/');
+                console.log('   ├── tests/class_6/student_name/test_id/');
+                console.log('   └── teachers/teacher_id/');
                 
             } catch (error) {
                 console.error('❌ Error initializing database:', error);
                 console.log('⚠️ Please check Firestore Security Rules');
-                console.log('📝 Recommended rules: Allow read/write in test mode');
             }
         }
 
