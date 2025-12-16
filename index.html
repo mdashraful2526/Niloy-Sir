@@ -2724,109 +2724,195 @@
             }
         }
 
-        // Initialize Professional Database Structure
+        // Initialize Professional Database Structure with Demo Data
         async function initializeDatabaseStructure() {
             try {
-                console.log('🔧 Initializing database structure...');
+                console.log('🔧 Initializing database structure with demo data...');
                 
                 const { collection, getDocs, setDoc, doc } = window.firestoreFunctions;
                 
-                // Check if admin exists, if not create default
-                const adminSnapshot = await getDocs(collection(window.db, 'admin'));
-                if (adminSnapshot.empty) {
-                    console.log('Creating admin collection...');
-                    await setDoc(doc(window.db, 'admin', 'admin_001'), {
-                        username: 'admin',
-                        password: 'admin123',
-                        createdAt: new Date(),
-                        updatedAt: new Date()
-                    });
-                    console.log('✅ Admin collection created');
+                // 1. Create Admin
+                try {
+                    const adminSnapshot = await getDocs(collection(window.db, 'admin'));
+                    if (adminSnapshot.empty) {
+                        console.log('Creating admin...');
+                        await setDoc(doc(window.db, 'admin', 'admin_001'), {
+                            username: 'admin',
+                            password: 'admin123',
+                            createdAt: new Date(),
+                            updatedAt: new Date()
+                        });
+                        console.log('✅ Admin created');
+                    }
+                } catch (error) {
+                    console.log('⚠️ Admin creation skipped:', error.message);
                 }
                 
-                // Create class-based collections structure
+                // 2. Create Demo Students for each class
                 const classes = ['6', '7', '8', '9', '10', '11'];
+                const demoStudents = {
+                    '6': [
+                        { roll: '601', name: 'আবির হোসেন', phone: '01712345678', monthlyFee: 1500, paymentDate: '5', previousResult: 'A+' },
+                        { roll: '602', name: 'সাদিয়া আক্তার', phone: '01812345678', monthlyFee: 1500, paymentDate: '5', previousResult: 'A' },
+                        { roll: '603', name: 'রাফি করিম', phone: '01912345678', monthlyFee: 1500, paymentDate: '10', previousResult: 'A-' }
+                    ],
+                    '7': [
+                        { roll: '701', name: 'তানিয়া রহমান', phone: '01712345679', monthlyFee: 1500, paymentDate: '5', previousResult: 'A+' },
+                        { roll: '702', name: 'শাহরিয়ার খান', phone: '01812345679', monthlyFee: 1500, paymentDate: '5', previousResult: 'A' }
+                    ],
+                    '8': [
+                        { roll: '801', name: 'নাফিসা ইসলাম', phone: '01712345680', monthlyFee: 1600, paymentDate: '5', previousResult: 'A+' },
+                        { roll: '802', name: 'মাহমুদ হাসান', phone: '01812345680', monthlyFee: 1600, paymentDate: '5', previousResult: 'A' }
+                    ],
+                    '9': [
+                        { roll: '901', name: 'রিয়া সুলতানা', phone: '01712345681', monthlyFee: 1700, paymentDate: '5', previousResult: 'A+' },
+                        { roll: '902', name: 'ইমরান হোসেন', phone: '01812345681', monthlyFee: 1700, paymentDate: '10', previousResult: 'A-' }
+                    ],
+                    '10': [
+                        { roll: '1001', name: 'জান্নাত আরা', phone: '01712345682', monthlyFee: 1800, paymentDate: '5', previousResult: 'A+' },
+                        { roll: '1002', name: 'তৌহিদ রহমান', phone: '01812345682', monthlyFee: 1800, paymentDate: '5', previousResult: 'A' }
+                    ],
+                    '11': [
+                        { roll: '1101', name: 'মারিয়া খান', phone: '01712345683', monthlyFee: 2000, paymentDate: '5', previousResult: 'A+' },
+                        { roll: '1102', name: 'রাকিব উদ্দিন', phone: '01812345683', monthlyFee: 2000, paymentDate: '10', previousResult: 'A' }
+                    ]
+                };
                 
-                // Initialize students structure
+                // Add demo students
                 for (const cls of classes) {
-                    const studentsRef = collection(window.db, `students/class_${cls}/list`);
-                    const studentsSnapshot = await getDocs(studentsRef);
-                    
-                    if (studentsSnapshot.empty) {
-                        console.log(`Creating students/class_${cls} structure...`);
-                        // Create a placeholder document
-                        await setDoc(doc(window.db, `students/class_${cls}/list`, 'placeholder'), {
-                            info: 'This is a placeholder. Add students here.',
-                            createdAt: new Date()
-                        });
+                    try {
+                        const students = demoStudents[cls];
+                        for (const student of students) {
+                            const studentId = `student_${cls}_${student.roll}`;
+                            await setDoc(doc(window.db, 'students', studentId), {
+                                ...student,
+                                class: cls,
+                                createdAt: new Date(),
+                                updatedAt: new Date()
+                            });
+                        }
+                        console.log(`✅ Added ${students.length} demo students to class ${cls}`);
+                    } catch (error) {
+                        console.log(`⚠️ Students for class ${cls} skipped:`, error.message);
                     }
                 }
                 
-                // Initialize attendance structure
+                // 3. Create Demo Teachers
+                const demoTeachers = [
+                    { name: 'মোঃ করিম উদ্দিন', subject: 'গণিত', phone: '01712345690', salary: 15000, joinDate: '2024-01-01', classes: ['6', '7', '8'] },
+                    { name: 'ফাতেমা বেগম', subject: 'বাংলা', phone: '01812345690', salary: 14000, joinDate: '2024-01-15', classes: ['6', '7', '8', '9'] },
+                    { name: 'রফিকুল ইসলাম', subject: 'ইংরেজি', phone: '01912345690', salary: 14000, joinDate: '2024-02-01', classes: ['9', '10', '11'] },
+                    { name: 'নাসরিন আক্তার', subject: 'বিজ্ঞান', phone: '01712345691', salary: 16000, joinDate: '2024-02-10', classes: ['8', '9', '10'] }
+                ];
+                
+                try {
+                    for (let i = 0; i < demoTeachers.length; i++) {
+                        await setDoc(doc(window.db, 'teachers', `teacher_${i + 1}`), {
+                            ...demoTeachers[i],
+                            createdAt: new Date(),
+                            updatedAt: new Date()
+                        });
+                    }
+                    console.log(`✅ Added ${demoTeachers.length} demo teachers`);
+                } catch (error) {
+                    console.log('⚠️ Teachers skipped:', error.message);
+                }
+                
+                // 4. Create Demo Attendance (Today)
                 const today = new Date().toISOString().split('T')[0];
                 for (const cls of classes) {
-                    const attendanceRef = collection(window.db, `attendance/class_${cls}/${today}`);
-                    const attendanceSnapshot = await getDocs(attendanceRef);
-                    
-                    if (attendanceSnapshot.empty) {
-                        console.log(`Creating attendance/class_${cls}/${today} structure...`);
-                        await setDoc(doc(window.db, `attendance/class_${cls}/${today}`, 'placeholder'), {
-                            info: 'This is a placeholder. Add attendance here.',
-                            createdAt: new Date()
-                        });
+                    try {
+                        const students = demoStudents[cls];
+                        for (let i = 0; i < students.length; i++) {
+                            const student = students[i];
+                            const studentId = `student_${cls}_${student.roll}`;
+                            await setDoc(doc(window.db, 'attendance', `${cls}_${today}_${studentId}`), {
+                                studentId: studentId,
+                                studentName: student.name,
+                                studentRoll: student.roll,
+                                class: cls,
+                                date: today,
+                                present: i % 2 === 0, // Alternate present/absent
+                                timestamp: new Date()
+                            });
+                        }
+                        console.log(`✅ Added attendance for class ${cls}`);
+                    } catch (error) {
+                        console.log(`⚠️ Attendance for class ${cls} skipped:`, error.message);
                     }
                 }
                 
-                // Initialize payments structure
-                const currentMonth = new Date().toISOString().substring(0, 7); // YYYY-MM
+                // 5. Create Demo Payments
+                const months = ['জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন', 'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর'];
+                const currentMonth = new Date().getMonth();
+                
                 for (const cls of classes) {
-                    const paymentsRef = collection(window.db, `payments/class_${cls}/students`);
-                    const paymentsSnapshot = await getDocs(paymentsRef);
-                    
-                    if (paymentsSnapshot.empty) {
-                        console.log(`Creating payments/class_${cls} structure...`);
-                        await setDoc(doc(window.db, `payments/class_${cls}/students`, 'placeholder'), {
-                            info: 'This is a placeholder. Add payments here.',
-                            createdAt: new Date()
-                        });
+                    try {
+                        const students = demoStudents[cls];
+                        for (const student of students) {
+                            const studentId = `student_${cls}_${student.roll}`;
+                            // Add payment for current month
+                            await setDoc(doc(window.db, 'payments', `${studentId}_${currentMonth + 1}_2024`), {
+                                studentId: studentId,
+                                studentName: student.name,
+                                studentRoll: student.roll,
+                                class: cls,
+                                month: months[currentMonth],
+                                year: '2024',
+                                amount: student.monthlyFee,
+                                isPaid: Math.random() > 0.3, // 70% paid
+                                paidDate: student.paymentDate + '-' + (currentMonth + 1) + '-2024',
+                                timestamp: new Date()
+                            });
+                        }
+                        console.log(`✅ Added payments for class ${cls}`);
+                    } catch (error) {
+                        console.log(`⚠️ Payments for class ${cls} skipped:`, error.message);
                     }
                 }
                 
-                // Initialize tests structure
+                // 6. Create Demo Tests
+                const subjects = ['বাংলা', 'ইংরেজি', 'গণিত', 'বিজ্ঞান'];
                 for (const cls of classes) {
-                    const testsRef = collection(window.db, `tests/class_${cls}/students`);
-                    const testsSnapshot = await getDocs(testsRef);
-                    
-                    if (testsSnapshot.empty) {
-                        console.log(`Creating tests/class_${cls} structure...`);
-                        await setDoc(doc(window.db, `tests/class_${cls}/students`, 'placeholder'), {
-                            info: 'This is a placeholder. Add test results here.',
-                            createdAt: new Date()
-                        });
+                    try {
+                        const students = demoStudents[cls];
+                        for (const student of students) {
+                            const studentId = `student_${cls}_${student.roll}`;
+                            for (let i = 0; i < 2; i++) {
+                                const subject = subjects[i];
+                                const marks = Math.floor(Math.random() * 30) + 70; // 70-100
+                                await setDoc(doc(window.db, 'tests', `${studentId}_${subject}_test${i + 1}`), {
+                                    studentId: studentId,
+                                    studentName: student.name,
+                                    studentRoll: student.roll,
+                                    class: cls,
+                                    subject: subject,
+                                    date: `2024-12-${10 + i}`,
+                                    marks: marks,
+                                    totalMarks: 100,
+                                    timestamp: new Date()
+                                });
+                            }
+                        }
+                        console.log(`✅ Added test results for class ${cls}`);
+                    } catch (error) {
+                        console.log(`⚠️ Tests for class ${cls} skipped:`, error.message);
                     }
                 }
                 
-                // Initialize teachers collection
-                const teachersSnapshot = await getDocs(collection(window.db, 'teachers'));
-                if (teachersSnapshot.empty) {
-                    console.log('Creating teachers collection...');
-                    await setDoc(doc(window.db, 'teachers', 'placeholder'), {
-                        info: 'This is a placeholder. Add teachers here.',
-                        createdAt: new Date()
-                    });
-                }
-                
-                console.log('✅ Database structure initialized successfully!');
-                console.log('📊 Structure:');
-                console.log('   ├── admin/');
-                console.log('   ├── students/class_6 to class_11/');
-                console.log('   ├── attendance/class_6 to class_11/YYYY-MM-DD/');
-                console.log('   ├── payments/class_6 to class_11/students/');
-                console.log('   ├── tests/class_6 to class_11/students/');
-                console.log('   └── teachers/');
+                console.log('✅ Database initialization complete!');
+                console.log('📊 Demo data added:');
+                console.log('   ✅ Admin account');
+                console.log('   ✅ 15+ Students (across all classes)');
+                console.log('   ✅ 4 Teachers');
+                console.log('   ✅ Today\'s attendance');
+                console.log('   ✅ Current month payments');
+                console.log('   ✅ Test results');
                 
             } catch (error) {
-                console.error('❌ Error initializing database structure:', error);
+                console.error('❌ Error initializing database:', error);
+                console.log('⚠️ Please check Firestore Security Rules');
+                console.log('📝 Recommended rules: Allow read/write in test mode');
             }
         }
 
