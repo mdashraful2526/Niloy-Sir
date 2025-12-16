@@ -6,6 +6,91 @@
     <title>কোচিং ম্যানেজমেন্ট সিস্টেম</title>
     
     <!-- Security Headers -->
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self';
+        script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://cdnjs.cloudflare.com;
+        style-src 'self' 'unsafe-inline';
+        img-src 'self' data: blob:;
+        font-src 'self' data:;
+        connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://firestore.googleapis.com;
+        frame-ancestors 'none';
+        base-uri 'self';
+        form-action 'self';
+    ">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+    <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
+    <meta http-equiv="Permissions-Policy" content="geolocation=(), microphone=(), camera=()">
+    
+    <!-- Prevent right-click and inspect -->
+    <script>
+        // Disable right-click
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+            return false;
+        });
+        
+        // Disable F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
+        document.addEventListener('keydown', function(e) {
+            // F12
+            if (e.keyCode === 123) {
+                e.preventDefault();
+                return false;
+            }
+            // Ctrl+Shift+I
+            if (e.ctrlKey && e.shiftKey && e.keyCode === 73) {
+                e.preventDefault();
+                return false;
+            }
+            // Ctrl+Shift+J
+            if (e.ctrlKey && e.shiftKey && e.keyCode === 74) {
+                e.preventDefault();
+                return false;
+            }
+            // Ctrl+U
+            if (e.ctrlKey && e.keyCode === 85) {
+                e.preventDefault();
+                return false;
+            }
+            // Ctrl+S
+            if (e.ctrlKey && e.keyCode === 83) {
+                e.preventDefault();
+                return false;
+            }
+        });
+        
+        // Detect if DevTools is open
+        let devtools = {open: false, orientation: null};
+        const threshold = 160;
+        
+        setInterval(function() {
+            if (window.outerWidth - window.innerWidth > threshold || 
+                window.outerHeight - window.innerHeight > threshold) {
+                if (!devtools.open) {
+                    devtools.open = true;
+                    document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-size:24px;color:red;">⚠️ Developer Tools Detected! Access Denied.</div>';
+                }
+            } else {
+                devtools.open = false;
+            }
+        }, 500);
+        
+        // Disable console functions
+        (function() {
+            try {
+                const noop = function() {};
+                const methods = ['log', 'debug', 'info', 'warn', 'error', 'table', 'trace', 'clear'];
+                methods.forEach(method => {
+                    if (console[method]) {
+                        console[method] = noop;
+                    }
+                });
+            } catch(e) {}
+        })();
+    </script>
+    
+    <!-- Security Headers -->
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com; frame-src 'none'; object-src 'none'; base-uri 'self';">
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
     <meta http-equiv="X-Frame-Options" content="DENY">
@@ -1107,17 +1192,6 @@
                 </div>
             </div>
 
-            <!-- Recent Test Results with Modern Design -->
-            <div class="public-tests-section">
-                <div class="section-header">
-                    <h2>📊 সাম্প্রতিক পরীক্ষার ফলাফল</h2>
-                    <p>শীর্ষ পারফরম্যান্স</p>
-                </div>
-                
-                <div class="tests-grid" id="publicTestsGrid">
-                    <!-- Tests will be loaded here -->
-                </div>
-            </div>
         </div>
     </div>
 
@@ -1269,8 +1343,98 @@
 
             <!-- Tests Section -->
             <div id="testsSection" class="content-section">
-                <h2 style="margin-bottom: 20px;">পরীক্ষার ফলাফল</h2>
-                <div id="classTestsContainer"></div>
+                <h2 style="margin-bottom: 20px;">📝 পরীক্ষার ফলাফল</h2>
+                
+                <!-- Test Entry Form -->
+                <div style="background: white; padding: 25px; border-radius: 15px; box-shadow: var(--shadow); margin-bottom: 30px;">
+                    <h3 style="margin: 0 0 20px 0;">নতুন পরীক্ষার ফলাফল যোগ করুন</h3>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                        <div class="form-group">
+                            <label>ক্লাস</label>
+                            <select id="testClass" required>
+                                <option value="">নির্বাচন করুন</option>
+                                <option value="6">ক্লাস ৬</option>
+                                <option value="7">ক্লাস ৭</option>
+                                <option value="8">ক্লাস ৮</option>
+                                <option value="9">ক্লাস ৯</option>
+                                <option value="10">ক্লাস ১০</option>
+                                <option value="11">ক্লাস ১১</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>শিক্ষার্থীর নাম</label>
+                            <input type="text" id="testStudentName" placeholder="নাম লিখুন" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>রোল নম্বর</label>
+                            <input type="text" id="testStudentRoll" placeholder="রোল" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>বিষয়</label>
+                            <input type="text" id="testSubject" placeholder="বাংলা/ইংরেজি/গণিত" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>পরীক্ষার তারিখ</label>
+                            <input type="date" id="testDate" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>প্রাপ্ত নম্বর</label>
+                            <input type="number" id="testMarks" placeholder="85" min="0" max="100" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>মোট নম্বর</label>
+                            <input type="number" id="testTotalMarks" value="100" min="0" required>
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-primary" onclick="addTestResult()" style="margin-top: 15px;">
+                        ফলাফল যোগ করুন
+                    </button>
+                </div>
+                
+                <!-- Test History Filters -->
+                <div style="background: white; padding: 20px; border-radius: 15px; box-shadow: var(--shadow); margin-bottom: 25px;">
+                    <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: center;">
+                        <div style="flex: 1; min-width: 200px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">ক্লাস ফিল্টার</label>
+                            <select id="testFilterClass" onchange="loadTestHistory()" style="width: 100%; padding: 10px; border: 2px solid var(--border); border-radius: 8px;">
+                                <option value="">সব ক্লাস</option>
+                                <option value="6">ক্লাস ৬</option>
+                                <option value="7">ক্লাস ৭</option>
+                                <option value="8">ক্লাস ৮</option>
+                                <option value="9">ক্লাস ৯</option>
+                                <option value="10">ক্লাস ১০</option>
+                                <option value="11">ক্লাস ১১</option>
+                            </select>
+                        </div>
+                        
+                        <div style="flex: 1; min-width: 200px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">তারিখ থেকে</label>
+                            <input type="date" id="testFilterFromDate" onchange="loadTestHistory()" style="width: 100%; padding: 10px; border: 2px solid var(--border); border-radius: 8px;">
+                        </div>
+                        
+                        <div style="flex: 1; min-width: 200px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">তারিখ পর্যন্ত</label>
+                            <input type="date" id="testFilterToDate" onchange="loadTestHistory()" style="width: 100%; padding: 10px; border: 2px solid var(--border); border-radius: 8px;">
+                        </div>
+                        
+                        <div style="flex: 0; min-width: 150px; margin-top: 24px;">
+                            <button class="btn btn-secondary" onclick="downloadTestHistory()" style="width: 100%;">
+                                📥 Download History
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Test History Display -->
+                <div id="testHistoryContainer"></div>
             </div>
 
             <!-- Payments Section -->
@@ -1586,16 +1750,120 @@
 
         console.log('✅ Firebase initialized successfully!');
 
+        // Security Functions
+        const Security = {
+            // XSS Protection - Sanitize input
+            sanitizeInput: function(input) {
+                if (typeof input !== 'string') return input;
+                const div = document.createElement('div');
+                div.textContent = input;
+                return div.innerHTML;
+            },
+            
+            // SQL Injection Protection
+            validateInput: function(input) {
+                if (typeof input !== 'string') return true;
+                const dangerous = ['<script', 'javascript:', 'onerror=', 'onclick=', 'onload=', 
+                                  'eval(', 'alert(', 'confirm(', 'prompt(', 'document.cookie',
+                                  'SELECT ', 'DROP ', 'INSERT ', 'UPDATE ', 'DELETE ', 'UNION '];
+                return !dangerous.some(pattern => input.toLowerCase().includes(pattern.toLowerCase()));
+            },
+            
+            // Rate Limiting
+            rateLimiter: {},
+            checkRateLimit: function(action, limit = 10, timeWindow = 60000) {
+                const now = Date.now();
+                if (!this.rateLimiter[action]) {
+                    this.rateLimiter[action] = [];
+                }
+                
+                // Remove old entries
+                this.rateLimiter[action] = this.rateLimiter[action].filter(
+                    time => now - time < timeWindow
+                );
+                
+                // Check limit
+                if (this.rateLimiter[action].length >= limit) {
+                    return false;
+                }
+                
+                this.rateLimiter[action].push(now);
+                return true;
+            },
+            
+            // Session Management
+            sessionTimeout: 30 * 60 * 1000, // 30 minutes
+            lastActivity: Date.now(),
+            
+            updateActivity: function() {
+                this.lastActivity = Date.now();
+            },
+            
+            checkSession: function() {
+                if (Date.now() - this.lastActivity > this.sessionTimeout) {
+                    alert('⚠️ Session expired! Please login again.');
+                    logout();
+                    return false;
+                }
+                return true;
+            },
+            
+            // Encrypt sensitive data (simple obfuscation)
+            encrypt: function(text) {
+                return btoa(encodeURIComponent(text));
+            },
+            
+            decrypt: function(encoded) {
+                try {
+                    return decodeURIComponent(atob(encoded));
+                } catch (e) {
+                    return null;
+                }
+            },
+            
+            // CSRF Token
+            csrfToken: null,
+            
+            generateCSRFToken: function() {
+                this.csrfToken = btoa(Math.random().toString(36).substring(2) + Date.now());
+                return this.csrfToken;
+            },
+            
+            validateCSRFToken: function(token) {
+                return token === this.csrfToken;
+            }
+        };
+        
+        // Track user activity for session
+        ['click', 'keypress', 'scroll', 'mousemove'].forEach(event => {
+            document.addEventListener(event, () => Security.updateActivity(), { passive: true });
+        });
+        
+        // Check session every minute
+        setInterval(() => {
+            if (document.getElementById('dashboard').style.display === 'block') {
+                Security.checkSession();
+            }
+        }, 60000);
+
         // Initialize the app
         window.addEventListener('load', async () => {
             try {
                 // Show loading screen
                 document.getElementById('loadingScreen').style.display = 'flex';
                 
-                // Initialize database structure
-                await initializeDatabaseStructure();
+                // Check if data already exists (skip initialization if data exists)
+                const { collection, getDocs } = window.firestoreFunctions;
+                const studentsCheck = await getDocs(collection(window.db, 'students'));
                 
-                await initializeDemoData();
+                if (studentsCheck.empty) {
+                    // Only initialize if no data exists
+                    console.log('📊 First time setup - initializing data...');
+                    await initializeDatabaseStructure();
+                } else {
+                    console.log('✅ Data already exists - skipping initialization');
+                }
+                
                 await loadPublicData();
                 
                 document.getElementById('attendanceDate').valueAsDate = new Date();
@@ -2857,11 +3125,34 @@
             }
         };
 
-        // Login functionality
+        // Secure Login functionality
         document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            const username = document.getElementById('username').value;
+            
+            // Rate limiting - max 5 login attempts per minute
+            if (!Security.checkRateLimit('login', 5, 60000)) {
+                alert('⚠️ অতিরিক্ত লগইন চেষ্টা! ১ মিনিট পরে আবার চেষ্টা করুন।');
+                return;
+            }
+            
+            const username = document.getElementById('username').value.trim();
             const password = document.getElementById('password').value;
+            
+            // Input validation
+            if (!username || !password) {
+                alert('❌ ইউজারনেম এবং পাসওয়ার্ড পূরণ করুন!');
+                return;
+            }
+            
+            // XSS Protection
+            if (!Security.validateInput(username) || !Security.validateInput(password)) {
+                alert('❌ Invalid input detected!');
+                return;
+            }
+            
+            // Sanitize inputs
+            const cleanUsername = Security.sanitizeInput(username);
+            const cleanPassword = Security.sanitizeInput(password);
 
             try {
                 const { collection, getDocs } = window.firestoreFunctions;
@@ -2873,35 +3164,63 @@
                     const adminData = adminSnapshot.docs[0].data();
                     
                     // Check credentials
-                    if (username === adminData.username && password === adminData.password) {
+                    if (cleanUsername === adminData.username && cleanPassword === adminData.password) {
+                        // Generate CSRF token
+                        Security.generateCSRFToken();
+                        
+                        // Update session
+                        Security.updateActivity();
+                        
+                        // Success
                         document.getElementById('publicView').style.display = 'none';
                         document.getElementById('loginPage').style.display = 'none';
                         document.getElementById('dashboard').style.display = 'block';
+                        
+                        // Clear password field
+                        document.getElementById('password').value = '';
+                        
                         loadDashboardData();
                     } else {
+                        // Wrong credentials - add delay to prevent brute force
+                        await new Promise(resolve => setTimeout(resolve, 2000));
                         alert('❌ ভুল ইউজারনেম বা পাসওয়ার্ড!');
                     }
                 } else {
-                    // First time - create default admin and allow login
-                    if (username === 'admin' && password === 'admin123') {
-                        await createDefaultAdmin();
+                    // First time - create default admin
+                    if (cleanUsername === 'admin' && cleanPassword === 'admin123') {
+                        await initializeDatabaseStructure();
+                        
+                        Security.generateCSRFToken();
+                        Security.updateActivity();
+                        
                         document.getElementById('publicView').style.display = 'none';
                         document.getElementById('loginPage').style.display = 'none';
                         document.getElementById('dashboard').style.display = 'block';
+                        document.getElementById('password').value = '';
+                        
                         loadDashboardData();
                         
-                        alert('ℹ️ Default admin তৈরি হয়েছে। দয়া করে সেটিংস থেকে পাসওয়ার্ড পরিবর্তন করুন!');
+                        alert('ℹ️ System initialized! Username: admin, Password: admin123\n\n⚠️ IMPORTANT: Change password from Firebase Console!');
                     } else {
+                        await new Promise(resolve => setTimeout(resolve, 2000));
                         alert('❌ ভুল ইউজারনেম বা পাসওয়ার্ড!');
                     }
                 }
             } catch (error) {
                 console.error('Login error:', error);
-                alert('❌ লগইন করতে সমস্যা হয়েছে: ' + error.message);
+                alert('❌ লগইন করতে সমস্যা হয়েছে!');
             }
         });
 
         function logout() {
+            // Clear session
+            Security.csrfToken = null;
+            Security.rateLimiter = {};
+            
+            // Clear forms
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+            
             document.getElementById('dashboard').style.display = 'none';
             document.getElementById('loginPage').style.display = 'none';
             document.getElementById('publicView').style.display = 'block';
@@ -3241,76 +3560,288 @@
         }
 
         // Tests management
-        async function loadTestsView() {
-            const container = document.getElementById('classTestsContainer');
-            container.innerHTML = '';
-
-            const classes = ['6', '7', '8', '9', '10', '11'];
-            const subjects = ['বাংলা', 'ইংরেজি', 'গণিত', 'বিজ্ঞান', 'সমাজ'];
-
-            for (const cls of classes) {
-                const classSection = document.createElement('div');
-                classSection.className = 'class-section';
-                classSection.innerHTML = `
-                    <h3 onclick="toggleClass(this)">ক্লাস ${cls}</h3>
-                    <div class="class-content"></div>
-                `;
-
-                const classContent = classSection.querySelector('.class-content');
-                
-                for (const subject of subjects) {
-                    const subjectCard = document.createElement('div');
-                    subjectCard.className = 'subject-card';
-                    subjectCard.innerHTML = `
-                        <strong>${subject}</strong>
-                        <button class="btn btn-primary" style="float: right; padding: 5px 15px;" 
-                                onclick="openTestModal('${cls}', '${subject}')">মার্কস এন্ট্রি করুন</button>
-                    `;
-                    classContent.appendChild(subjectCard);
-                }
-
-                container.appendChild(classSection);
-            }
-        }
-
-        function toggleClass(element) {
-            element.parentElement.classList.toggle('collapsed');
-        }
-
-        async function openTestModal(className, subject) {
-            document.getElementById('testModal').classList.add('active');
-            document.getElementById('testModalTitle').textContent = `ক্লাস ${className} - ${subject} - মার্কস এন্ট্রি`;
+        // Professional Test Management Functions
+        
+        // Add new test result
+        async function addTestResult() {
+            const testClass = document.getElementById('testClass').value;
+            const studentName = document.getElementById('testStudentName').value.trim();
+            const studentRoll = document.getElementById('testStudentRoll').value.trim();
+            const subject = document.getElementById('testSubject').value.trim();
+            const date = document.getElementById('testDate').value;
+            const marks = parseInt(document.getElementById('testMarks').value);
+            const totalMarks = parseInt(document.getElementById('testTotalMarks').value);
             
-            window.currentTest = { class: className, subject: subject };
-
+            if (!testClass || !studentName || !studentRoll || !subject || !date || !marks || !totalMarks) {
+                alert('সব ফিল্ড পূরণ করুন!');
+                return;
+            }
+            
             try {
-                const { collection, getDocs, query, where } = window.firestoreFunctions;
-                const q = query(collection(window.db, 'students'), where('class', '==', className));
-                const studentsSnapshot = await getDocs(q);
+                const { setDoc, doc } = window.firestoreFunctions;
                 
-                const studentsList = document.getElementById('testStudentsList');
-                studentsList.innerHTML = '';
-
-                studentsSnapshot.forEach(doc => {
-                    const student = doc.data();
-                    const testEntry = document.createElement('div');
-                    testEntry.className = 'test-entry';
-                    testEntry.innerHTML = `
-                        <span style="flex: 1;">${student.name} (${student.roll})</span>
-                        <input type="number" placeholder="মার্কস" 
-                               data-student-id="${doc.id}" 
-                               data-student-name="${student.name}">
-                    `;
-                    studentsList.appendChild(testEntry);
+                const testId = `test_${subject}_${Date.now()}`;
+                const className = `class_${testClass}`;
+                
+                // Path: tests/class_6/আবির হোসেন/test_বাংলা_123456
+                await setDoc(doc(window.db, 'tests', className, studentName, testId), {
+                    studentName: studentName,
+                    studentRoll: studentRoll,
+                    class: testClass,
+                    subject: subject,
+                    date: date,
+                    marks: marks,
+                    totalMarks: totalMarks,
+                    percentage: ((marks / totalMarks) * 100).toFixed(2),
+                    timestamp: new Date()
                 });
+                
+                alert('✅ পরীক্ষার ফলাফল সফলভাবে যোগ হয়েছে!');
+                
+                // Clear form
+                document.getElementById('testClass').value = '';
+                document.getElementById('testStudentName').value = '';
+                document.getElementById('testStudentRoll').value = '';
+                document.getElementById('testSubject').value = '';
+                document.getElementById('testDate').value = '';
+                document.getElementById('testMarks').value = '';
+                document.getElementById('testTotalMarks').value = '100';
+                
+                // Reload history
+                loadTestHistory();
+                
             } catch (error) {
-                console.error('Error loading students for test:', error);
+                console.error('Error adding test:', error);
+                alert('❌ ফলাফল যোগ করতে সমস্যা হয়েছে!');
             }
         }
-
-        function closeTestModal() {
-            document.getElementById('testModal').classList.remove('active');
+        
+        // Load test history with filters
+        async function loadTestHistory() {
+            const container = document.getElementById('testHistoryContainer');
+            container.innerHTML = '<p style="text-align: center; padding: 20px;">Loading...</p>';
+            
+            const filterClass = document.getElementById('testFilterClass').value;
+            const fromDate = document.getElementById('testFilterFromDate').value;
+            const toDate = document.getElementById('testFilterToDate').value;
+            
+            try {
+                const { collection, getDocs } = window.firestoreFunctions;
+                let allTests = [];
+                
+                // Get tests from all classes or specific class
+                const classes = filterClass ? [`class_${filterClass}`] : ['class_6', 'class_7', 'class_8', 'class_9', 'class_10', 'class_11'];
+                
+                for (const className of classes) {
+                    const testsSnapshot = await getDocs(collection(window.db, 'tests', className));
+                    
+                    for (const studentDoc of testsSnapshot.docs) {
+                        const studentName = studentDoc.id;
+                        const studentTestsSnapshot = await getDocs(collection(window.db, 'tests', className, studentName));
+                        
+                        studentTestsSnapshot.forEach(testDoc => {
+                            const test = testDoc.data();
+                            
+                            // Apply date filters
+                            if (fromDate && test.date < fromDate) return;
+                            if (toDate && test.date > toDate) return;
+                            
+                            allTests.push({
+                                ...test,
+                                id: testDoc.id,
+                                className: className
+                            });
+                        });
+                    }
+                }
+                
+                // Sort by date (newest first)
+                allTests.sort((a, b) => new Date(b.date) - new Date(a.date));
+                
+                // Display tests
+                if (allTests.length === 0) {
+                    container.innerHTML = '<p style="text-align: center; padding: 40px; color: var(--text-light);">কোনো পরীক্ষার ফলাফল পাওয়া যায়নি</p>';
+                    return;
+                }
+                
+                let html = '<div style="background: white; border-radius: 15px; overflow: hidden; box-shadow: var(--shadow);">';
+                html += '<table style="width: 100%; border-collapse: collapse;">';
+                html += `<thead style="background: var(--primary); color: white;">
+                    <tr>
+                        <th style="padding: 15px; text-align: left;">তারিখ</th>
+                        <th style="padding: 15px; text-align: left;">ক্লাস</th>
+                        <th style="padding: 15px; text-align: left;">শিক্ষার্থী</th>
+                        <th style="padding: 15px; text-align: left;">রোল</th>
+                        <th style="padding: 15px; text-align: left;">বিষয়</th>
+                        <th style="padding: 15px; text-align: center;">মার্কস</th>
+                        <th style="padding: 15px; text-align: center;">শতাংশ</th>
+                        <th style="padding: 15px; text-align: center;">গ্রেড</th>
+                    </tr>
+                </thead><tbody>`;
+                
+                allTests.forEach((test, index) => {
+                    const percentage = ((test.marks / test.totalMarks) * 100).toFixed(2);
+                    let grade = 'F';
+                    let gradeColor = '#dc2626';
+                    
+                    if (percentage >= 80) { grade = 'A+'; gradeColor = '#10b981'; }
+                    else if (percentage >= 70) { grade = 'A'; gradeColor = '#059669'; }
+                    else if (percentage >= 60) { grade = 'A-'; gradeColor = '#3b82f6'; }
+                    else if (percentage >= 50) { grade = 'B'; gradeColor = '#f59e0b'; }
+                    else if (percentage >= 40) { grade = 'C'; gradeColor = '#ef4444'; }
+                    
+                    const bgColor = index % 2 === 0 ? '#f9fafb' : 'white';
+                    
+                    html += `<tr style="background: ${bgColor};">
+                        <td style="padding: 12px;">${formatBengaliDate(test.date)}</td>
+                        <td style="padding: 12px;">ক্লাস ${test.class}</td>
+                        <td style="padding: 12px;">${test.studentName}</td>
+                        <td style="padding: 12px;">${test.studentRoll}</td>
+                        <td style="padding: 12px;">${test.subject}</td>
+                        <td style="padding: 12px; text-align: center;">${test.marks}/${test.totalMarks}</td>
+                        <td style="padding: 12px; text-align: center; font-weight: 600;">${percentage}%</td>
+                        <td style="padding: 12px; text-align: center;">
+                            <span style="background: ${gradeColor}; color: white; padding: 4px 12px; border-radius: 6px; font-weight: 600;">${grade}</span>
+                        </td>
+                    </tr>`;
+                });
+                
+                html += '</tbody></table></div>';
+                html += `<p style="text-align: center; margin-top: 15px; color: var(--text-light);">মোট ${allTests.length}টি পরীক্ষার ফলাফল</p>`;
+                
+                container.innerHTML = html;
+                
+                // Store for download
+                window.currentTestHistory = allTests;
+                
+            } catch (error) {
+                console.error('Error loading test history:', error);
+                container.innerHTML = '<p style="text-align: center; padding: 20px; color: red;">Error loading tests</p>';
+            }
         }
+        
+        // Download test history as image
+        async function downloadTestHistory() {
+            if (!window.currentTestHistory || window.currentTestHistory.length === 0) {
+                alert('কোনো ফলাফল নেই!');
+                return;
+            }
+            
+            const canvas = document.getElementById('reportCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            const tests = window.currentTestHistory;
+            const itemsPerPage = 15;
+            const totalPages = Math.ceil(tests.length / itemsPerPage);
+            
+            // Canvas size
+            canvas.width = 1200;
+            const rowHeight = 35;
+            const headerHeight = 100;
+            const footerHeight = 50;
+            canvas.height = headerHeight + (itemsPerPage * rowHeight) + footerHeight + 50;
+            
+            for (let page = 0; page < totalPages; page++) {
+                // Clear canvas
+                ctx.fillStyle = 'white';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // Header
+                ctx.fillStyle = '#4f46e5';
+                ctx.fillRect(0, 0, canvas.width, headerHeight);
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 32px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('পরীক্ষার ফলাফল - History', canvas.width / 2, 40);
+                ctx.font = '18px Arial';
+                ctx.fillText(`Page ${page + 1} of ${totalPages}`, canvas.width / 2, 75);
+                
+                // Table header
+                let y = headerHeight + 20;
+                ctx.fillStyle = '#1e293b';
+                ctx.fillRect(0, y, canvas.width, rowHeight);
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 16px Arial';
+                ctx.textAlign = 'left';
+                
+                const cols = [50, 180, 310, 500, 670, 800, 920, 1050];
+                const headers = ['তারিখ', 'ক্লাস', 'শিক্ষার্থী', 'রোল', 'বিষয়', 'মার্কস', 'শতাংশ', 'গ্রেড'];
+                
+                headers.forEach((header, i) => {
+                    ctx.fillText(header, cols[i], y + 22);
+                });
+                
+                y += rowHeight;
+                
+                // Table rows
+                const startIdx = page * itemsPerPage;
+                const endIdx = Math.min(startIdx + itemsPerPage, tests.length);
+                
+                for (let i = startIdx; i < endIdx; i++) {
+                    const test = tests[i];
+                    const percentage = ((test.marks / test.totalMarks) * 100).toFixed(2);
+                    let grade = 'F';
+                    
+                    if (percentage >= 80) grade = 'A+';
+                    else if (percentage >= 70) grade = 'A';
+                    else if (percentage >= 60) grade = 'A-';
+                    else if (percentage >= 50) grade = 'B';
+                    else if (percentage >= 40) grade = 'C';
+                    
+                    // Row background
+                    ctx.fillStyle = i % 2 === 0 ? '#f1f5f9' : '#ffffff';
+                    ctx.fillRect(0, y, canvas.width, rowHeight);
+                    
+                    // Row text
+                    ctx.fillStyle = '#1e293b';
+                    ctx.font = '14px Arial';
+                    ctx.fillText(formatBengaliDate(test.date), cols[0], y + 22);
+                    ctx.fillText(`ক্লাস ${test.class}`, cols[1], y + 22);
+                    ctx.fillText(test.studentName, cols[2], y + 22);
+                    ctx.fillText(test.studentRoll, cols[3], y + 22);
+                    ctx.fillText(test.subject, cols[4], y + 22);
+                    ctx.fillText(`${test.marks}/${test.totalMarks}`, cols[5], y + 22);
+                    ctx.fillText(`${percentage}%`, cols[6], y + 22);
+                    
+                    // Grade with color
+                    ctx.font = 'bold 14px Arial';
+                    if (percentage >= 70) ctx.fillStyle = '#10b981';
+                    else if (percentage >= 50) ctx.fillStyle = '#f59e0b';
+                    else ctx.fillStyle = '#ef4444';
+                    ctx.fillText(grade, cols[7], y + 22);
+                    
+                    y += rowHeight;
+                }
+                
+                // Footer
+                ctx.fillStyle = '#64748b';
+                ctx.font = '14px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(`Generated: ${new Date().toLocaleDateString('bn-BD')}`, canvas.width / 2, canvas.height - 20);
+                
+                // Download
+                const link = document.createElement('a');
+                link.download = `পরীক্ষার-ফলাফল-page-${page + 1}.png`;
+                link.href = canvas.toDataURL();
+                link.click();
+                
+                // Wait a bit between pages
+                if (page < totalPages - 1) {
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                }
+            }
+            
+            alert(`✅ ${totalPages}টি page download হয়েছে!`);
+        }
+        
+        // Helper function to format Bengali date
+        function formatBengaliDate(dateStr) {
+            const date = new Date(dateStr);
+            const months = ['জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন', 'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর'];
+            return `${date.getDate()} ${months[date.getMonth()]}, ${date.getFullYear()}`;
+        }
+
+        // Old test functions removed - using new professional system
 
         async function saveTestResults() {
             const testDate = document.getElementById('testDate').value;
