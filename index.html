@@ -1607,17 +1607,18 @@
     <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, doc, getDoc, updateDoc, deleteDoc, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, doc, getDoc, updateDoc, deleteDoc, query, where, orderBy, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
+        // Firebase Configuration - Updated
         const firebaseConfig = {
-            apiKey: "AIzaSyC01lb7jzflHvkYrHL8C4IPOLbdyVDsxJc",
-            authDomain: "coachingsir-61189.firebaseapp.com",
-            projectId: "coachingsir-61189",
-            storageBucket: "coachingsir-61189.firebasestorage.app",
-            messagingSenderId: "491407192710",
-            appId: "1:491407192710:web:297b1b97ec531f59559707",
-            measurementId: "G-2LWKWNLYPF"
+            apiKey: "AIzaSyDvRl0J1O3uFfQk52DeCJ3fMxqTiPYA9pU",
+            authDomain: "munnas-a366e.firebaseapp.com",
+            projectId: "munnas-a366e",
+            storageBucket: "munnas-a366e.firebasestorage.app",
+            messagingSenderId: "954493666312",
+            appId: "1:954493666312:web:1eb09fc2c9c3205a8d7dbd",
+            measurementId: "G-BPWCJT9G57"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -1627,14 +1628,19 @@
         // Make Firebase available globally
         window.db = db;
         window.auth = auth;
-        window.firestoreFunctions = { collection, addDoc, getDocs, doc, getDoc, updateDoc, deleteDoc, query, where, orderBy };
+        window.firestoreFunctions = { collection, addDoc, getDocs, doc, getDoc, updateDoc, deleteDoc, query, where, orderBy, setDoc };
         window.authFunctions = { sendPasswordResetEmail };
+
+        console.log('✅ Firebase initialized successfully!');
 
         // Initialize the app
         window.addEventListener('load', async () => {
             try {
                 // Show loading screen
                 document.getElementById('loadingScreen').style.display = 'flex';
+                
+                // Initialize database structure
+                await initializeDatabaseStructure();
                 
                 await initializeDemoData();
                 await loadPublicData();
@@ -2715,6 +2721,112 @@
             // Load settings if settings tab
             if (tabName === 'settings') {
                 loadAdminSettings();
+            }
+        }
+
+        // Initialize Professional Database Structure
+        async function initializeDatabaseStructure() {
+            try {
+                console.log('🔧 Initializing database structure...');
+                
+                const { collection, getDocs, setDoc, doc } = window.firestoreFunctions;
+                
+                // Check if admin exists, if not create default
+                const adminSnapshot = await getDocs(collection(window.db, 'admin'));
+                if (adminSnapshot.empty) {
+                    console.log('Creating admin collection...');
+                    await setDoc(doc(window.db, 'admin', 'admin_001'), {
+                        username: 'admin',
+                        password: 'admin123',
+                        createdAt: new Date(),
+                        updatedAt: new Date()
+                    });
+                    console.log('✅ Admin collection created');
+                }
+                
+                // Create class-based collections structure
+                const classes = ['6', '7', '8', '9', '10', '11'];
+                
+                // Initialize students structure
+                for (const cls of classes) {
+                    const studentsRef = collection(window.db, `students/class_${cls}/list`);
+                    const studentsSnapshot = await getDocs(studentsRef);
+                    
+                    if (studentsSnapshot.empty) {
+                        console.log(`Creating students/class_${cls} structure...`);
+                        // Create a placeholder document
+                        await setDoc(doc(window.db, `students/class_${cls}/list`, 'placeholder'), {
+                            info: 'This is a placeholder. Add students here.',
+                            createdAt: new Date()
+                        });
+                    }
+                }
+                
+                // Initialize attendance structure
+                const today = new Date().toISOString().split('T')[0];
+                for (const cls of classes) {
+                    const attendanceRef = collection(window.db, `attendance/class_${cls}/${today}`);
+                    const attendanceSnapshot = await getDocs(attendanceRef);
+                    
+                    if (attendanceSnapshot.empty) {
+                        console.log(`Creating attendance/class_${cls}/${today} structure...`);
+                        await setDoc(doc(window.db, `attendance/class_${cls}/${today}`, 'placeholder'), {
+                            info: 'This is a placeholder. Add attendance here.',
+                            createdAt: new Date()
+                        });
+                    }
+                }
+                
+                // Initialize payments structure
+                const currentMonth = new Date().toISOString().substring(0, 7); // YYYY-MM
+                for (const cls of classes) {
+                    const paymentsRef = collection(window.db, `payments/class_${cls}/students`);
+                    const paymentsSnapshot = await getDocs(paymentsRef);
+                    
+                    if (paymentsSnapshot.empty) {
+                        console.log(`Creating payments/class_${cls} structure...`);
+                        await setDoc(doc(window.db, `payments/class_${cls}/students`, 'placeholder'), {
+                            info: 'This is a placeholder. Add payments here.',
+                            createdAt: new Date()
+                        });
+                    }
+                }
+                
+                // Initialize tests structure
+                for (const cls of classes) {
+                    const testsRef = collection(window.db, `tests/class_${cls}/students`);
+                    const testsSnapshot = await getDocs(testsRef);
+                    
+                    if (testsSnapshot.empty) {
+                        console.log(`Creating tests/class_${cls} structure...`);
+                        await setDoc(doc(window.db, `tests/class_${cls}/students`, 'placeholder'), {
+                            info: 'This is a placeholder. Add test results here.',
+                            createdAt: new Date()
+                        });
+                    }
+                }
+                
+                // Initialize teachers collection
+                const teachersSnapshot = await getDocs(collection(window.db, 'teachers'));
+                if (teachersSnapshot.empty) {
+                    console.log('Creating teachers collection...');
+                    await setDoc(doc(window.db, 'teachers', 'placeholder'), {
+                        info: 'This is a placeholder. Add teachers here.',
+                        createdAt: new Date()
+                    });
+                }
+                
+                console.log('✅ Database structure initialized successfully!');
+                console.log('📊 Structure:');
+                console.log('   ├── admin/');
+                console.log('   ├── students/class_6 to class_11/');
+                console.log('   ├── attendance/class_6 to class_11/YYYY-MM-DD/');
+                console.log('   ├── payments/class_6 to class_11/students/');
+                console.log('   ├── tests/class_6 to class_11/students/');
+                console.log('   └── teachers/');
+                
+            } catch (error) {
+                console.error('❌ Error initializing database structure:', error);
             }
         }
 
