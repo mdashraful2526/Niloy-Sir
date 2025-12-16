@@ -1218,13 +1218,19 @@
             <form id="loginForm">
                 <div class="form-group">
                     <label>ইউজারনেম</label>
-                    <input type="text" id="username" placeholder="demo" required>
+                    <input type="text" id="username" placeholder="admin" value="admin" required>
                 </div>
                 <div class="form-group">
                     <label>পাসওয়ার্ড</label>
-                    <input type="password" id="password" placeholder="demo" required>
+                    <input type="password" id="password" placeholder="admin123" value="admin123" required>
                 </div>
-                <button type="submit" class="btn btn-primary">লগইন করুন</button>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">লগইন করুন</button>
+                
+                <div style="margin-top: 15px; padding: 15px; background: #e0f2fe; border-radius: 8px; font-size: 14px;">
+                    <strong>ℹ️ Default Credentials:</strong><br>
+                    Username: <code>admin</code><br>
+                    Password: <code>admin123</code>
+                </div>
             </form>
             <div class="forgot-password" style="margin-top: 15px;">
                 <a href="#" onclick="backToPublicView()">← পাবলিক ভিউতে ফিরে যান</a>
@@ -3151,153 +3157,90 @@
             }
         };
 
-        // Secure Login functionality
+        // SIMPLE WORKING LOGIN - NO COMPLEXITY
         document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            console.log('🔐 ========== LOGIN ATTEMPT ==========');
+            console.log('=== LOGIN START ===');
             
             const username = document.getElementById('username').value.trim();
-            const password = document.getElementById('password').value;
+            const password = document.getElementById('password').value.trim();
             
-            console.log('📝 Username:', username);
-            console.log('📝 Password length:', password.length);
-            console.log('📝 Password:', password); // Temporary debug
+            console.log('Username:', username);
+            console.log('Password:', password);
             
-            // Basic validation
             if (!username || !password) {
-                console.log('❌ Empty fields detected');
-                alert('❌ ইউজারনেম এবং পাসওয়ার্ড পূরণ করুন!');
+                alert('ইউজারনেম এবং পাসওয়ার্ড পূরণ করুন!');
                 return;
             }
             
-            // Rate limiting check
-            console.log('🔍 Checking rate limit...');
-            if (!Security.checkRateLimit('login', 5, 60000)) {
-                console.log('❌ Rate limit exceeded');
-                alert('⚠️ অতিরিক্ত লগইন চেষ্টা! ১ মিনিট পরে আবার চেষ্টা করুন।');
-                return;
-            }
-            console.log('✅ Rate limit OK');
-            
-            // XSS Protection for username only
-            console.log('🔍 Validating username...');
-            if (!Security.validateInput(username)) {
-                console.log('❌ Invalid username pattern detected');
-                alert('❌ Invalid username!');
-                return;
-            }
-            console.log('✅ Username validation passed');
-            
-            // Sanitize username only
-            const cleanUsername = username; // No sanitization for now to debug
-
             try {
-                console.log('🔍 Connecting to Firebase...');
-                
-                if (!window.db) {
-                    console.error('❌ Firebase DB not initialized!');
-                    alert('Firebase not initialized! Please refresh the page.');
-                    return;
-                }
-                
-                if (!window.firestoreFunctions) {
-                    console.error('❌ Firestore functions not available!');
-                    alert('Firestore functions not available! Please refresh the page.');
-                    return;
-                }
-                
                 const { collection, getDocs } = window.firestoreFunctions;
                 
-                console.log('🔍 Fetching admin credentials from Firestore...');
-                
-                // Get admin credentials from Firestore
+                console.log('Getting admin from Firebase...');
                 const adminSnapshot = await getDocs(collection(window.db, 'admin'));
                 
-                console.log('📊 Admin documents found:', adminSnapshot.size);
+                console.log('Admin docs found:', adminSnapshot.size);
                 
                 if (!adminSnapshot.empty) {
-                    const adminDoc = adminSnapshot.docs[0];
-                    const adminData = adminDoc.data();
+                    // Admin exists - check credentials
+                    const adminData = adminSnapshot.docs[0].data();
                     
-                    console.log('✅ Admin data retrieved:');
-                    console.log('  - Stored username:', adminData.username);
-                    console.log('  - Stored password:', adminData.password);
-                    console.log('  - Input username:', cleanUsername);
-                    console.log('  - Input password:', password);
-                    console.log('  - Username match:', cleanUsername === adminData.username);
-                    console.log('  - Password match:', password === adminData.password);
+                    console.log('Stored username:', adminData.username);
+                    console.log('Stored password:', adminData.password);
+                    console.log('Match:', username === adminData.username && password === adminData.password);
                     
-                    // Direct comparison - no sanitization
-                    if (cleanUsername === adminData.username && password === adminData.password) {
-                        console.log('✅✅✅ LOGIN SUCCESSFUL! ✅✅✅');
+                    if (username === adminData.username && password === adminData.password) {
+                        console.log('✅ LOGIN SUCCESS!');
                         
-                        // Generate CSRF token
-                        Security.generateCSRFToken();
-                        Security.updateActivity();
-                        
-                        // Clear form
-                        document.getElementById('password').value = '';
-                        
-                        // Hide public view and login
+                        // Hide pages
                         document.getElementById('publicView').style.display = 'none';
                         document.getElementById('loginPage').style.display = 'none';
                         
                         // Show dashboard
                         document.getElementById('dashboard').style.display = 'block';
                         
-                        console.log('📊 Loading dashboard data...');
-                        await loadDashboardData();
-                        console.log('✅ Dashboard loaded!');
+                        // Clear password
+                        document.getElementById('password').value = '';
                         
+                        // Load data
+                        loadDashboardData();
+                        
+                        alert('✅ লগইন সফল!');
                     } else {
-                        console.log('❌ CREDENTIALS DO NOT MATCH!');
-                        
-                        // Add delay to prevent brute force
-                        await new Promise(resolve => setTimeout(resolve, 2000));
+                        console.log('❌ Wrong credentials');
                         alert('❌ ভুল ইউজারনেম বা পাসওয়ার্ড!');
                     }
-                } else {
-                    console.log('⚠️ No admin found in database');
-                    console.log('🔍 Checking default credentials...');
-                    console.log('  - Input username:', cleanUsername);
-                    console.log('  - Expected: "admin"');
-                    console.log('  - Input password:', password);
-                    console.log('  - Expected: "admin123"');
                     
-                    // First time - check default credentials
-                    if (cleanUsername === 'admin' && password === 'admin123') {
-                        console.log('✅ Default credentials matched!');
-                        console.log('🔨 Initializing database...');
+                } else {
+                    // No admin - first time setup
+                    console.log('No admin found - checking default...');
+                    
+                    if (username === 'admin' && password === 'admin123') {
+                        console.log('✅ Default credentials OK - creating admin...');
                         
                         await initializeDatabaseStructure();
                         
-                        Security.generateCSRFToken();
-                        Security.updateActivity();
-                        
-                        document.getElementById('password').value = '';
                         document.getElementById('publicView').style.display = 'none';
                         document.getElementById('loginPage').style.display = 'none';
                         document.getElementById('dashboard').style.display = 'block';
+                        document.getElementById('password').value = '';
                         
-                        await loadDashboardData();
+                        loadDashboardData();
                         
-                        alert('ℹ️ System initialized!\n\nUsername: admin\nPassword: admin123\n\n⚠️ Change password from Firebase Console!');
+                        alert('✅ System ready! Username: admin, Password: admin123');
                     } else {
-                        console.log('❌ Default credentials do not match!');
-                        await new Promise(resolve => setTimeout(resolve, 2000));
-                        alert('❌ ভুল ইউজারনেম বা পাসওয়ার্ড!');
+                        console.log('❌ Wrong default credentials');
+                        alert('❌ Default credentials: admin / admin123');
                     }
                 }
                 
-                console.log('🔐 ========== LOGIN ATTEMPT END ==========');
-                
             } catch (error) {
-                console.error('❌ LOGIN ERROR:', error);
-                console.error('Error message:', error.message);
-                console.error('Error stack:', error.stack);
-                alert('❌ লগইন করতে সমস্যা হয়েছে!\n\nError: ' + error.message);
+                console.error('Login error:', error);
+                alert('Error: ' + error.message);
             }
+            
+            console.log('=== LOGIN END ===');
         });
 
         function logout() {
