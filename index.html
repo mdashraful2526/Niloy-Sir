@@ -2591,15 +2591,76 @@
         // Initialize Professional Database Structure with Demo Data
         async function initializeDatabaseStructure() {
             try {
-                console.log('🔧 Initializing database structure with demo data...');
+                console.log('🔧 Cleaning old data and creating fresh structure...');
                 
-                const { collection, getDocs, setDoc, doc } = window.firestoreFunctions;
+                const { collection, getDocs, setDoc, doc, deleteDoc } = window.firestoreFunctions;
                 
-                // 1. Create Admin
+                // STEP 1: DELETE ALL OLD DATA
+                console.log('🗑️ Deleting old data...');
+                
+                // Delete old students
+                try {
+                    const oldStudentsSnapshot = await getDocs(collection(window.db, 'students'));
+                    for (const docSnapshot of oldStudentsSnapshot.docs) {
+                        await deleteDoc(docSnapshot.ref);
+                    }
+                    console.log('✅ Old students deleted');
+                } catch (error) {
+                    console.log('⚠️ No old students to delete');
+                }
+                
+                // Delete old attendance
+                try {
+                    const oldAttendanceSnapshot = await getDocs(collection(window.db, 'attendance'));
+                    for (const docSnapshot of oldAttendanceSnapshot.docs) {
+                        await deleteDoc(docSnapshot.ref);
+                    }
+                    console.log('✅ Old attendance deleted');
+                } catch (error) {
+                    console.log('⚠️ No old attendance to delete');
+                }
+                
+                // Delete old payments
+                try {
+                    const oldPaymentsSnapshot = await getDocs(collection(window.db, 'payments'));
+                    for (const docSnapshot of oldPaymentsSnapshot.docs) {
+                        await deleteDoc(docSnapshot.ref);
+                    }
+                    console.log('✅ Old payments deleted');
+                } catch (error) {
+                    console.log('⚠️ No old payments to delete');
+                }
+                
+                // Delete old tests
+                try {
+                    const oldTestsSnapshot = await getDocs(collection(window.db, 'tests'));
+                    for (const docSnapshot of oldTestsSnapshot.docs) {
+                        await deleteDoc(docSnapshot.ref);
+                    }
+                    console.log('✅ Old tests deleted');
+                } catch (error) {
+                    console.log('⚠️ No old tests to delete');
+                }
+                
+                // Delete old teachers
+                try {
+                    const oldTeachersSnapshot = await getDocs(collection(window.db, 'teachers'));
+                    for (const docSnapshot of oldTeachersSnapshot.docs) {
+                        await deleteDoc(docSnapshot.ref);
+                    }
+                    console.log('✅ Old teachers deleted');
+                } catch (error) {
+                    console.log('⚠️ No old teachers to delete');
+                }
+                
+                console.log('✅ All old data cleaned!');
+                console.log('');
+                console.log('🔨 Creating fresh structure...');
+                
+                // STEP 2: CREATE ADMIN
                 try {
                     const adminSnapshot = await getDocs(collection(window.db, 'admin'));
                     if (adminSnapshot.empty) {
-                        console.log('Creating admin...');
                         await setDoc(doc(window.db, 'admin', 'admin_001'), {
                             username: 'admin',
                             password: 'admin123',
@@ -2609,10 +2670,10 @@
                         console.log('✅ Admin created');
                     }
                 } catch (error) {
-                    console.log('⚠️ Admin creation skipped:', error.message);
+                    console.log('⚠️ Admin already exists');
                 }
                 
-                // 2. Create Demo Students - Using NAME as document ID
+                // STEP 3: CREATE FRESH STUDENTS DATA
                 const demoStudents = {
                     'class_6': [
                         { roll: '601', name: 'আবির হোসেন', phone: '01712345678', monthlyFee: 1500, paymentDate: '5', previousResult: 'A+' },
@@ -2641,36 +2702,30 @@
                     ]
                 };
                 
-                // Add students - Using STUDENT NAME as document ID
+                // Add students - PATH: students/class_6/আবির হোসেন
                 for (const className in demoStudents) {
-                    try {
-                        const students = demoStudents[className];
-                        const classNum = className.replace('class_', '');
+                    const students = demoStudents[className];
+                    const classNum = className.replace('class_', '');
+                    
+                    for (const student of students) {
+                        const studentDocId = student.name; // Use NAME as ID
                         
-                        for (const student of students) {
-                            // Use STUDENT NAME as document ID
-                            const studentDocId = student.name;
-                            
-                            // Path: students/class_6/আবির হোসেন
-                            await setDoc(doc(window.db, 'students', className, studentDocId), {
-                                roll: student.roll,
-                                name: student.name,
-                                class: classNum,
-                                phone: student.phone,
-                                monthlyFee: student.monthlyFee,
-                                paymentDate: student.paymentDate,
-                                previousResult: student.previousResult,
-                                createdAt: new Date(),
-                                updatedAt: new Date()
-                            });
-                        }
-                        console.log(`✅ Added ${students.length} students to ${className}`);
-                    } catch (error) {
-                        console.log(`⚠️ Students for ${className} skipped:`, error.message);
+                        await setDoc(doc(window.db, 'students', className, studentDocId), {
+                            roll: student.roll,
+                            name: student.name,
+                            class: classNum,
+                            phone: student.phone,
+                            monthlyFee: student.monthlyFee,
+                            paymentDate: student.paymentDate,
+                            previousResult: student.previousResult,
+                            createdAt: new Date(),
+                            updatedAt: new Date()
+                        });
                     }
+                    console.log(`✅ Created ${students.length} students in students/${className}/`);
                 }
                 
-                // 3. Create Demo Teachers
+                // STEP 4: CREATE TEACHERS - PATH: teachers/মোঃ করিম উদ্দিন
                 const demoTeachers = [
                     { name: 'মোঃ করিম উদ্দিন', subject: 'গণিত', phone: '01712345690', salary: 15000, joinDate: '2024-01-01', classes: ['6', '7', '8'] },
                     { name: 'ফাতেমা বেগম', subject: 'বাংলা', phone: '01812345690', salary: 14000, joinDate: '2024-01-15', classes: ['6', '7', '8', '9'] },
@@ -2678,122 +2733,106 @@
                     { name: 'নাসরিন আক্তার', subject: 'বিজ্ঞান', phone: '01712345691', salary: 16000, joinDate: '2024-02-10', classes: ['8', '9', '10'] }
                 ];
                 
-                try {
-                    for (const teacher of demoTeachers) {
-                        // Use teacher name as document ID
-                        await setDoc(doc(window.db, 'teachers', teacher.name), {
-                            ...teacher,
-                            createdAt: new Date(),
-                            updatedAt: new Date()
-                        });
-                    }
-                    console.log(`✅ Added ${demoTeachers.length} demo teachers`);
-                } catch (error) {
-                    console.log('⚠️ Teachers skipped:', error.message);
+                for (const teacher of demoTeachers) {
+                    await setDoc(doc(window.db, 'teachers', teacher.name), {
+                        ...teacher,
+                        createdAt: new Date(),
+                        updatedAt: new Date()
+                    });
                 }
+                console.log(`✅ Created ${demoTeachers.length} teachers in teachers/`);
                 
-                // 4. Create Demo Attendance - Using STUDENT NAME
+                // STEP 5: CREATE ATTENDANCE - PATH: attendance/class_6/2025-12-16/আবির হোসেন
                 const today = new Date().toISOString().split('T')[0];
                 for (const className in demoStudents) {
-                    try {
-                        const students = demoStudents[className];
-                        const classNum = className.replace('class_', '');
+                    const students = demoStudents[className];
+                    const classNum = className.replace('class_', '');
+                    
+                    for (let i = 0; i < students.length; i++) {
+                        const student = students[i];
+                        const studentDocId = student.name;
                         
-                        for (let i = 0; i < students.length; i++) {
-                            const student = students[i];
-                            const studentDocId = student.name;
-                            
-                            // Path: attendance/class_6/2025-12-16/আবির হোসেন
-                            await setDoc(doc(window.db, 'attendance', className, today, studentDocId), {
-                                studentName: student.name,
-                                studentRoll: student.roll,
-                                class: classNum,
-                                date: today,
-                                present: i % 2 === 0,
-                                timestamp: new Date()
-                            });
-                        }
-                        console.log(`✅ Added attendance for ${className}`);
-                    } catch (error) {
-                        console.log(`⚠️ Attendance for ${className} skipped:`, error.message);
+                        await setDoc(doc(window.db, 'attendance', className, today, studentDocId), {
+                            studentName: student.name,
+                            studentRoll: student.roll,
+                            class: classNum,
+                            date: today,
+                            present: i % 2 === 0,
+                            timestamp: new Date()
+                        });
                     }
+                    console.log(`✅ Created attendance in attendance/${className}/${today}/`);
                 }
                 
-                // 5. Create Demo Payments - Using STUDENT NAME
+                // STEP 6: CREATE PAYMENTS - PATH: payments/class_6/আবির হোসেন/2024-12
                 const months = ['জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন', 'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর'];
                 const currentMonth = new Date().getMonth();
                 
                 for (const className in demoStudents) {
-                    try {
-                        const students = demoStudents[className];
-                        const classNum = className.replace('class_', '');
+                    const students = demoStudents[className];
+                    const classNum = className.replace('class_', '');
+                    
+                    for (const student of students) {
+                        const studentDocId = student.name;
                         
-                        for (const student of students) {
-                            const studentDocId = student.name;
+                        await setDoc(doc(window.db, 'payments', className, studentDocId, `2024-${String(currentMonth + 1).padStart(2, '0')}`), {
+                            studentName: student.name,
+                            studentRoll: student.roll,
+                            class: classNum,
+                            month: months[currentMonth],
+                            year: '2024',
+                            amount: student.monthlyFee,
+                            isPaid: Math.random() > 0.3,
+                            paidDate: `${student.paymentDate}-${String(currentMonth + 1).padStart(2, '0')}-2024`,
+                            timestamp: new Date()
+                        });
+                    }
+                    console.log(`✅ Created payments in payments/${className}/`);
+                }
+                
+                // STEP 7: CREATE TESTS - PATH: tests/class_6/আবির হোসেন/test_বাংলা_1
+                const subjects = ['বাংলা', 'ইংরেজি', 'গণিত', 'বিজ্ঞান'];
+                for (const className in demoStudents) {
+                    const students = demoStudents[className];
+                    const classNum = className.replace('class_', '');
+                    
+                    for (const student of students) {
+                        const studentDocId = student.name;
+                        
+                        for (let i = 0; i < 2; i++) {
+                            const subject = subjects[i];
+                            const marks = Math.floor(Math.random() * 30) + 70;
                             
-                            // Path: payments/class_6/আবির হোসেন/2024-12
-                            await setDoc(doc(window.db, 'payments', className, studentDocId, `2024-${String(currentMonth + 1).padStart(2, '0')}`), {
+                            await setDoc(doc(window.db, 'tests', className, studentDocId, `test_${subject}_${i + 1}`), {
                                 studentName: student.name,
                                 studentRoll: student.roll,
                                 class: classNum,
-                                month: months[currentMonth],
-                                year: '2024',
-                                amount: student.monthlyFee,
-                                isPaid: Math.random() > 0.3,
-                                paidDate: `${student.paymentDate}-${String(currentMonth + 1).padStart(2, '0')}-2024`,
+                                subject: subject,
+                                date: `2024-12-${10 + i}`,
+                                marks: marks,
+                                totalMarks: 100,
                                 timestamp: new Date()
                             });
                         }
-                        console.log(`✅ Added payments for ${className}`);
-                    } catch (error) {
-                        console.log(`⚠️ Payments for ${className} skipped:`, error.message);
                     }
+                    console.log(`✅ Created tests in tests/${className}/`);
                 }
                 
-                // 6. Create Demo Tests - Using STUDENT NAME
-                const subjects = ['বাংলা', 'ইংরেজি', 'গণিত', 'বিজ্ঞান'];
-                for (const className in demoStudents) {
-                    try {
-                        const students = demoStudents[className];
-                        const classNum = className.replace('class_', '');
-                        
-                        for (const student of students) {
-                            const studentDocId = student.name;
-                            
-                            for (let i = 0; i < 2; i++) {
-                                const subject = subjects[i];
-                                const marks = Math.floor(Math.random() * 30) + 70;
-                                
-                                // Path: tests/class_6/আবির হোসেন/test_বাংলা_1
-                                await setDoc(doc(window.db, 'tests', className, studentDocId, `test_${subject}_${i + 1}`), {
-                                    studentName: student.name,
-                                    studentRoll: student.roll,
-                                    class: classNum,
-                                    subject: subject,
-                                    date: `2024-12-${10 + i}`,
-                                    marks: marks,
-                                    totalMarks: 100,
-                                    timestamp: new Date()
-                                });
-                            }
-                        }
-                        console.log(`✅ Added test results for ${className}`);
-                    } catch (error) {
-                        console.log(`⚠️ Tests for ${className} skipped:`, error.message);
-                    }
-                }
-                
-                console.log('✅ Database initialization complete!');
-                console.log('📊 Perfect nested structure:');
-                console.log('   ├── students/class_6/আবির হোসেন/');
-                console.log('   ├── attendance/class_6/2025-12-16/আবির হোসেন/');
-                console.log('   ├── payments/class_6/আবির হোসেন/2024-12/');
-                console.log('   ├── tests/class_6/আবির হোসেন/test_বাংলা_1/');
-                console.log('   └── teachers/মোঃ করিম উদ্দিন/');
+                console.log('');
+                console.log('✅ ✅ ✅ DATABASE READY! ✅ ✅ ✅');
+                console.log('');
+                console.log('📊 Perfect Structure Created:');
+                console.log('   ✅ students/class_6/আবির হোসেন/');
+                console.log('   ✅ attendance/class_6/2025-12-16/আবির হোসেন/');
+                console.log('   ✅ payments/class_6/আবির হোসেন/2024-12/');
+                console.log('   ✅ tests/class_6/আবির হোসেন/test_বাংলা_1/');
+                console.log('   ✅ teachers/মোঃ করিম উদ্দিন/');
+                console.log('');
+                console.log('🔥 Go check Firebase Console now!');
                 
             } catch (error) {
-                console.error('❌ Error initializing database:', error);
-                console.log('⚠️ Please check Firestore Security Rules');
+                console.error('❌ Error:', error);
+                console.log('⚠️ Check Firestore Security Rules');
             }
         }
 
