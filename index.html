@@ -1195,7 +1195,6 @@
                 <button class="nav-tab" onclick="showTab('tests')">পরীক্ষার ফলাফল</button>
                 <button class="nav-tab" onclick="showTab('payments')">পেমেন্ট</button>
                 <button class="nav-tab" onclick="showTab('teachers')">শিক্ষক</button>
-                <button class="nav-tab" onclick="showTab('settings')">⚙️ সেটিংস</button>
             </div>
 
             <!-- Students Section -->
@@ -1265,52 +1264,6 @@
                         <tbody id="attendanceTableBody">
                         </tbody>
                     </table>
-                </div>
-            </div>
-
-            <!-- Admin Settings Section -->
-            <div id="settingsSection" class="content-section">
-                <h2 style="margin-bottom: 20px;">⚙️ অ্যাডমিন সেটিংস</h2>
-                
-                <div style="max-width: 800px;">
-                    
-                    <!-- Current Admin Info -->
-                    <div style="background: #eff6ff; padding: 25px; border-radius: 15px; margin-bottom: 30px; border-left: 5px solid var(--primary);">
-                        <h3 style="margin: 0 0 15px 0; color: var(--primary);">📋 বর্তমান অ্যাডমিন তথ্য</h3>
-                        <p style="margin: 5px 0;"><strong>Username:</strong> <span id="currentAdminUsername">Loading...</span></p>
-                        <p style="margin: 5px 0; font-size: 0.9em; color: var(--text-light);">পাসওয়ার্ড সুরক্ষিত রাখা হয়েছে</p>
-                    </div>
-
-                    <!-- Edit Admin Credentials -->
-                    <div style="background: white; padding: 30px; border-radius: 15px; box-shadow: var(--shadow); margin-bottom: 25px;">
-                        <h3 style="margin: 0 0 20px 0; color: var(--text-dark); display: flex; align-items: center; gap: 10px;">
-                            <span>✏️</span> অ্যাডমিন তথ্য পরিবর্তন করুন
-                        </h3>
-                        
-                        <div class="form-group">
-                            <label>নতুন Username</label>
-                            <input type="text" id="editAdminUsername" placeholder="admin" required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>নতুন Password (কমপক্ষে ৬ অক্ষর)</label>
-                            <input type="password" id="editAdminPassword" placeholder="••••••" minlength="6" required>
-                        </div>
-                        
-                        <button class="btn btn-primary" onclick="updateAdminCredentials()">
-                            আপডেট করুন
-                        </button>
-                    </div>
-
-                    <!-- Instructions -->
-                    <div style="background: #fef2f2; padding: 20px; border-radius: 15px; border-left: 5px solid #dc2626;">
-                        <h4 style="margin: 0 0 10px 0; color: #dc2626;">🔐 নিরাপত্তা পরামর্শ</h4>
-                        <ul style="margin: 0; padding-left: 20px; color: #7f1d1d;">
-                            <li>শক্তিশালী পাসওয়ার্ড ব্যবহার করুন (বড় হাতের অক্ষর, ছোট হাতের অক্ষর, সংখ্যা)</li>
-                            <li>পরিবর্তন করার পর নতুন তথ্য দিয়ে লগইন করুন</li>
-                            <li>কখনই পাসওয়ার্ড কারো সাথে শেয়ার করবেন না</li>
-                        </ul>
-                    </div>
                 </div>
             </div>
 
@@ -2612,91 +2565,7 @@
         function closeStudentDetails() {
             document.getElementById('studentDetailsModal').classList.remove('active');
         }
-        // Admin Settings Functions
-        async function loadAdminSettings() {
-            try {
-                const { collection, getDocs } = window.firestoreFunctions;
-                
-                // Load admin data from Firestore
-                const adminSnapshot = await getDocs(collection(window.db, 'admin'));
-                
-                if (!adminSnapshot.empty) {
-                    const adminData = adminSnapshot.docs[0].data();
-                    document.getElementById('currentAdminUsername').textContent = adminData.username || 'admin';
-                    document.getElementById('editAdminUsername').value = adminData.username || 'admin';
-                } else {
-                    // Create default admin if not exists
-                    await createDefaultAdmin();
-                }
-            } catch (error) {
-                console.error('Error loading admin settings:', error);
-                document.getElementById('currentAdminUsername').textContent = 'admin';
-            }
-        }
-
-        // Create default admin in Firestore
-        async function createDefaultAdmin() {
-            try {
-                const { collection, addDoc } = window.firestoreFunctions;
-                
-                await addDoc(collection(window.db, 'admin'), {
-                    username: 'admin',
-                    password: 'admin123',
-                    createdAt: new Date(),
-                    updatedAt: new Date()
-                });
-                
-                console.log('Default admin created');
-            } catch (error) {
-                console.error('Error creating default admin:', error);
-            }
-        }
-
-        // Update admin credentials in Firestore
-        async function updateAdminCredentials() {
-            const newUsername = document.getElementById('editAdminUsername').value.trim();
-            const newPassword = document.getElementById('editAdminPassword').value.trim();
-
-            if (!newUsername || !newPassword) {
-                alert('সব ফিল্ড পূরণ করুন!');
-                return;
-            }
-
-            if (newPassword.length < 6) {
-                alert('পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে!');
-                return;
-            }
-
-            try {
-                const { collection, getDocs, doc, updateDoc } = window.firestoreFunctions;
-                
-                // Get admin document
-                const adminSnapshot = await getDocs(collection(window.db, 'admin'));
-                
-                if (!adminSnapshot.empty) {
-                    const adminDocRef = adminSnapshot.docs[0].ref;
-                    
-                    // Update admin credentials
-                    await updateDoc(adminDocRef, {
-                        username: newUsername,
-                        password: newPassword,
-                        updatedAt: new Date()
-                    });
-                    
-                    alert('✅ অ্যাডমিন তথ্য সফলভাবে আপডেট হয়েছে!\n\nনতুন তথ্য:\nUsername: ' + newUsername + '\n\nদয়া করে নতুন তথ্য দিয়ে আবার লগইন করুন।');
-                    
-                    // Logout
-                    logout();
-                } else {
-                    alert('❌ Admin তথ্য পাওয়া যায়নি!');
-                }
-            } catch (error) {
-                console.error('Error updating admin:', error);
-                alert('❌ আপডেট করতে সমস্যা হয়েছে: ' + error.message);
-            }
-        }
-
-        // Update showTab function to load settings
+        // Tab navigation function
         function showTab(tabName) {
             // Hide all sections
             const sections = document.querySelectorAll('.content-section');
@@ -2716,11 +2585,6 @@
             // Add active class to clicked tab
             if (event && event.target) {
                 event.target.classList.add('active');
-            }
-            
-            // Load settings if settings tab
-            if (tabName === 'settings') {
-                loadAdminSettings();
             }
         }
 
@@ -2748,7 +2612,7 @@
                     console.log('⚠️ Admin creation skipped:', error.message);
                 }
                 
-                // 2. Create Demo Students - NESTED STRUCTURE
+                // 2. Create Demo Students - Using NAME as document ID
                 const demoStudents = {
                     'class_6': [
                         { roll: '601', name: 'আবির হোসেন', phone: '01712345678', monthlyFee: 1500, paymentDate: '5', previousResult: 'A+' },
@@ -2777,17 +2641,17 @@
                     ]
                 };
                 
-                // Add students with nested structure: students/class_X/student_name
+                // Add students - Using STUDENT NAME as document ID
                 for (const className in demoStudents) {
                     try {
                         const students = demoStudents[className];
                         const classNum = className.replace('class_', '');
                         
                         for (const student of students) {
-                            // Use student name as document ID (cleaned)
-                            const studentDocId = `student_${classNum}_${student.roll}`;
+                            // Use STUDENT NAME as document ID
+                            const studentDocId = student.name;
                             
-                            // Path: students/class_6/আবির_হোসেন
+                            // Path: students/class_6/আবির হোসেন
                             await setDoc(doc(window.db, 'students', className, studentDocId), {
                                 roll: student.roll,
                                 name: student.name,
@@ -2815,9 +2679,10 @@
                 ];
                 
                 try {
-                    for (let i = 0; i < demoTeachers.length; i++) {
-                        await setDoc(doc(window.db, 'teachers', `teacher_${i + 1}`), {
-                            ...demoTeachers[i],
+                    for (const teacher of demoTeachers) {
+                        // Use teacher name as document ID
+                        await setDoc(doc(window.db, 'teachers', teacher.name), {
+                            ...teacher,
                             createdAt: new Date(),
                             updatedAt: new Date()
                         });
@@ -2827,7 +2692,7 @@
                     console.log('⚠️ Teachers skipped:', error.message);
                 }
                 
-                // 4. Create Demo Attendance - NESTED: attendance/class_X/date/student_name
+                // 4. Create Demo Attendance - Using STUDENT NAME
                 const today = new Date().toISOString().split('T')[0];
                 for (const className in demoStudents) {
                     try {
@@ -2836,11 +2701,10 @@
                         
                         for (let i = 0; i < students.length; i++) {
                             const student = students[i];
-                            const studentDocId = `student_${classNum}_${student.roll}`;
+                            const studentDocId = student.name;
                             
-                            // Path: attendance/class_6/2025-12-16/আবির_হোসেন
+                            // Path: attendance/class_6/2025-12-16/আবির হোসেন
                             await setDoc(doc(window.db, 'attendance', className, today, studentDocId), {
-                                studentId: studentDocId,
                                 studentName: student.name,
                                 studentRoll: student.roll,
                                 class: classNum,
@@ -2855,7 +2719,7 @@
                     }
                 }
                 
-                // 5. Create Demo Payments - NESTED: payments/class_X/student_name/month
+                // 5. Create Demo Payments - Using STUDENT NAME
                 const months = ['জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন', 'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর'];
                 const currentMonth = new Date().getMonth();
                 
@@ -2865,11 +2729,10 @@
                         const classNum = className.replace('class_', '');
                         
                         for (const student of students) {
-                            const studentDocId = `student_${classNum}_${student.roll}`;
+                            const studentDocId = student.name;
                             
-                            // Path: payments/class_6/আবির_হোসেন/2024-12
+                            // Path: payments/class_6/আবির হোসেন/2024-12
                             await setDoc(doc(window.db, 'payments', className, studentDocId, `2024-${String(currentMonth + 1).padStart(2, '0')}`), {
-                                studentId: studentDocId,
                                 studentName: student.name,
                                 studentRoll: student.roll,
                                 class: classNum,
@@ -2887,7 +2750,7 @@
                     }
                 }
                 
-                // 6. Create Demo Tests - NESTED: tests/class_X/student_name/test_id
+                // 6. Create Demo Tests - Using STUDENT NAME
                 const subjects = ['বাংলা', 'ইংরেজি', 'গণিত', 'বিজ্ঞান'];
                 for (const className in demoStudents) {
                     try {
@@ -2895,15 +2758,14 @@
                         const classNum = className.replace('class_', '');
                         
                         for (const student of students) {
-                            const studentDocId = `student_${classNum}_${student.roll}`;
+                            const studentDocId = student.name;
                             
                             for (let i = 0; i < 2; i++) {
                                 const subject = subjects[i];
                                 const marks = Math.floor(Math.random() * 30) + 70;
                                 
-                                // Path: tests/class_6/আবির_হোসেন/test_বাংলা_1
+                                // Path: tests/class_6/আবির হোসেন/test_বাংলা_1
                                 await setDoc(doc(window.db, 'tests', className, studentDocId, `test_${subject}_${i + 1}`), {
-                                    studentId: studentDocId,
                                     studentName: student.name,
                                     studentRoll: student.roll,
                                     class: classNum,
@@ -2922,12 +2784,12 @@
                 }
                 
                 console.log('✅ Database initialization complete!');
-                console.log('📊 Nested structure created:');
-                console.log('   ├── students/class_6/student_name/');
-                console.log('   ├── attendance/class_6/date/student_name/');
-                console.log('   ├── payments/class_6/student_name/month/');
-                console.log('   ├── tests/class_6/student_name/test_id/');
-                console.log('   └── teachers/teacher_id/');
+                console.log('📊 Perfect nested structure:');
+                console.log('   ├── students/class_6/আবির হোসেন/');
+                console.log('   ├── attendance/class_6/2025-12-16/আবির হোসেন/');
+                console.log('   ├── payments/class_6/আবির হোসেন/2024-12/');
+                console.log('   ├── tests/class_6/আবির হোসেন/test_বাংলা_1/');
+                console.log('   └── teachers/মোঃ করিম উদ্দিন/');
                 
             } catch (error) {
                 console.error('❌ Error initializing database:', error);
