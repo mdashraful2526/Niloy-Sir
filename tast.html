@@ -285,12 +285,22 @@
                 const z = Math.cos(radian) * radiusZ;
                 const y = Math.sin(radian) * heightVariation;
                 
-                // z value: সামনে = +radiusZ (বড়), পিছনে = -radiusZ (ছোট)
-                // normalize করে 0 to 1 এ নিয়ে আসি
-                const normalizedZ = (z + radiusZ) / (radiusZ * 2); // 0 (পিছনে) to 1 (সামনে)
+                // angle: 0° = সামনে, 180° = পিছনে
+                // 0° থেকে 180° = বড় থেকে ছোট
+                // 180° থেকে 360° = ছোট থেকে বড়
                 
-                // সামনে সবচেয়ে বড় (2.8), পিছনে সবচেয়ে ছোট (0.4)
-                const scale = 0.4 + (normalizedZ * 2.4); // 0.4 থেকে 2.8
+                let scale;
+                const normalizedAngle = (angle % 360); // 0 to 360
+                
+                if (normalizedAngle <= 180) {
+                    // 0° থেকে 180° পর্যন্ত: বড় থেকে ছোট
+                    const progress = normalizedAngle / 180; // 0 to 1
+                    scale = 2.8 - (progress * 2.4); // 2.8 থেকে 0.4
+                } else {
+                    // 180° থেকে 360° পর্যন্ত: ছোট থেকে বড়
+                    const progress = (normalizedAngle - 180) / 180; // 0 to 1
+                    scale = 0.4 + (progress * 2.4); // 0.4 থেকে 2.8
+                }
                 
                 item.style.transform = `
                     translate(-50%, -50%)
@@ -299,7 +309,8 @@
                 `;
                 
                 // opacity ও scale অনুযায়ী
-                item.style.opacity = Math.max(0.3, normalizedZ * 0.7 + 0.3);
+                const opacityFactor = scale / 2.8; // 0 to 1
+                item.style.opacity = Math.max(0.3, opacityFactor * 0.7 + 0.3);
                 item.style.zIndex = Math.round(scale * 100);
             });
         }
